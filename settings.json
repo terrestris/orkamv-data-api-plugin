@@ -1,0 +1,4 @@
+{
+    "python.autoComplete.extraPaths": ["/usr/share/qgis/python/qsci_apis"]
+}
+ 
