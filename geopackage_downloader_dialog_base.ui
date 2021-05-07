@@ -173,16 +173,6 @@
      </widget>
     </item>
     <item>
-     <widget class="QPushButton" name="download_cancel_button">
-      <property name="enabled">
-       <bool>false</bool>
-      </property>
-      <property name="text">
-       <string>Cancel</string>
-      </property>
-     </widget>
-    </item>
-    <item>
      <widget class="QPushButton" name="download_start_button">
       <property name="enabled">
        <bool>false</bool>

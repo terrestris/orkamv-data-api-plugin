@@ -237,6 +237,13 @@ class GeopackageDownloader:
             # substitute with your code.
             pass
 
+    def read_layers(self):
+        self.dlg.layer_extent_combo_box.clear()
+        self.dlg.layer_extent_combo_box.addItem('Select Layer ...', None)
+        layer: QgsMapLayer
+        for layer in QgsProject.instance().mapLayers().values():
+            self.dlg.layer_extent_combo_box.addItem(layer.name(), layer)
+
     def draw_extent(self):
         if self.tool is not None:
             self.tool.reset()
@@ -280,26 +287,11 @@ class GeopackageDownloader:
             )
         self.check_required_for_download()
 
-    def check_required_for_download(self):
-        check = self.extent is not None
-        self.dlg.download_start_button.setEnabled(check)
-
     def finished_bbox(self):
         self.set_extent_from_map(self.tool.get_bbox())
         self.tool.deactivate()
         self.tool = None
         self.dlg.layer_extent_combo_box.setCurrentIndex(0)
-
-    def update_progress(self):
-        avg = (self.geopackage_task.progress() + self.resources_task.progress()) / 2
-        self.dlg.download_progress_bar.setValue(avg)
-
-    def read_layers(self):
-        self.dlg.layer_extent_combo_box.clear()
-        self.dlg.layer_extent_combo_box.addItem('Select Layer ...', None)
-        layer: QgsMapLayer
-        for layer in QgsProject.instance().mapLayers().values():
-            self.dlg.layer_extent_combo_box.addItem(layer.name(), layer)
 
     def select_extent_layer(self, index):
         if index > 0:
@@ -309,6 +301,22 @@ class GeopackageDownloader:
     def read_visible_extent(self):
         rect: QgsRectangle = self.iface.mapCanvas().extent()
         self.set_extent_from_map(rect)
+
+    def toggle_persistance_mode(self):
+        if self.dlg.persistance_radio_todir.isChecked():
+            self.dlg.persistance_path_edit.setEnabled(True)
+            self.update_target_dir()
+            self.temporary = False
+        else:
+            self.dlg.persistance_path_edit.setEnabled(False)
+            self.target_dir = None
+            self.temporary = True
+
+    def update_target_dir(self):
+        self.target_dir = self.dlg.persistance_path_edit.text()
+
+    def check_required_for_download(self):
+        self.dlg.download_start_button.setEnabled(self.extent is not None)
 
     def start_download(self):
         self.dlg.download_start_button.setEnabled(False)
@@ -330,7 +338,8 @@ class GeopackageDownloader:
         print(self.geopackage_task.status())
         print(self.resources_task.status())
         if self.geopackage_task.status() == QgsTask.Complete and self.resources_task.status() == QgsTask.Complete:
-            for layer in self.geopackage_task.layers:
+            for layer_name in self.resources_task.layer_order:
+                layer = self.geopackage_task.layers[layer_name]
                 layer.loadNamedStyle(self.resources_task.style_files[layer.name()])
                 QgsProject.instance().addMapLayer(layer)
 
@@ -339,15 +348,6 @@ class GeopackageDownloader:
 
             self.dlg.done(True)
 
-    def toggle_persistance_mode(self):
-        if self.dlg.persistance_radio_todir.isChecked():
-            self.dlg.persistance_path_edit.setEnabled(True)
-            self.update_target_dir()
-            self.temporary = False
-        else:
-            self.dlg.persistance_path_edit.setEnabled(False)
-            self.target_dir = None
-            self.temporary = True
-
-    def update_target_dir(self):
-        self.target_dir = self.dlg.persistance_path_edit.text()
+    def update_progress(self):
+        avg = (self.geopackage_task.progress() * 3 + self.resources_task.progress()) / 4
+        self.dlg.download_progress_bar.setValue(avg)

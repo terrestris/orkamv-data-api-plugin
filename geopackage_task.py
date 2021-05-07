@@ -2,7 +2,7 @@ import json
 import os
 import tempfile
 from time import sleep
-from typing import Tuple, List, Optional
+from typing import Tuple, Dict
 
 from PyQt5.QtCore import QUrl
 from PyQt5.QtNetwork import QNetworkRequest
@@ -13,7 +13,7 @@ class GeopackageTask(QgsTask):
 
     job_id: int
     data_id: str
-    layers: List[QgsVectorLayer] = []
+    layers: Dict[str, QgsVectorLayer] = []
 
     def __init__(self, base_url: str, extent: Tuple[float, float, float, float], target_dir: str):
         self.base_url = base_url[:-1] if base_url.endswith('/') else base_url
@@ -58,7 +58,7 @@ class GeopackageTask(QgsTask):
         self.setProgress(20)
         while not self.get_job_status():
             sleep(0.5)
-        self.setProgress(50)
+        self.setProgress(70)
 
         self.download_file()
         self.setProgress(100)
@@ -79,9 +79,8 @@ class GeopackageTask(QgsTask):
 
             for sub_layer in layer.dataProvider().subLayers():
                 name = sub_layer.split(QgsDataProvider.SUBLAYER_SEPARATOR)[1]
-                print(name)
                 uri = "%s|layername=%s" % (file_name, name,)
-                self.layers.append(QgsVectorLayer(uri, name, 'ogr'))
+                self.layers[name] = QgsVectorLayer(uri, name, 'ogr')
 
         if self.target_dir is None:
             os.remove(file_name)
