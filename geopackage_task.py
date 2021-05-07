@@ -13,7 +13,7 @@ class GeopackageTask(QgsTask):
 
     job_id: int
     data_id: str
-    layers: Dict[str, QgsVectorLayer] = []
+    layers: Dict[str, QgsVectorLayer] = {}
 
     def __init__(self, base_url: str, extent: Tuple[float, float, float, float], target_dir: str):
         self.base_url = base_url[:-1] if base_url.endswith('/') else base_url

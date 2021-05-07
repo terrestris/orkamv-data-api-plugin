@@ -32,14 +32,14 @@ class ResourcesTask(QgsTask):
         with open(tmp_file_name, 'w+b') as fp:
             fp.write(res.content().data())
 
-        styles_dir = os.path.join(self.target_dir, 'styles')
-
         with zipfile.ZipFile(tmp_file_name, 'r') as zip_ref:
-            zip_ref.extractall(styles_dir)
+            zip_ref.extractall(self.target_dir)
 
         os.remove(tmp_file_name)
 
         self.setProgress(100)
+
+        styles_dir = os.path.join(self.target_dir, 'styles')
 
         for file_name in os.listdir(styles_dir):
             layer_name = os.path.splitext(file_name)[0]

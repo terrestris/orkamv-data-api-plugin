@@ -23,7 +23,7 @@
 """
 import re
 import tempfile
-from typing import Union, Optional, Tuple
+from typing import Union, Optional, Tuple, Dict, List
 
 from qgis.PyQt.QtCore import QSettings, QTranslator, QCoreApplication
 from qgis.PyQt.QtGui import QIcon
@@ -31,7 +31,7 @@ from qgis.PyQt.QtWidgets import QAction
 from qgis.gui import QgisInterface
 
 from qgis.core import Qgis, QgsProject, QgsMapLayer, QgsRectangle, QgsApplication, QgsTask, \
-    QgsCoordinateReferenceSystem, QgsCoordinateTransform
+    QgsCoordinateReferenceSystem, QgsCoordinateTransform, QgsVectorLayer
 
 from .resources_task import ResourcesTask
 from .geopackage_task import GeopackageTask
@@ -52,9 +52,16 @@ class OrkamvDataApiPlugin:
     dlg: Optional[OrkamvDataApiPluginDialog] = None
     extent: Optional[Tuple[float, float, float, float]]
     geopackage_task: Optional[GeopackageTask] = None
+    geopackage_completed = False
     resources_task: Optional[ResourcesTask] = None
+    resources_completed = False
     temporary: bool = True
     target_dir: Optional[str] = None
+
+    result_layers: Dict[str, QgsVectorLayer]
+    result_layer_order: List[str]
+    result_style_files: Dict[str, str]
+    result_symbols_dir: str
 
     def __init__(self, iface):
         """Constructor.
@@ -251,11 +258,11 @@ class OrkamvDataApiPlugin:
         self.tool.selection_done.connect(self.finished_bbox)
 
     def set_extent_from_map(self, extent: QgsRectangle):
-        crsSrc = self.iface.mapCanvas().mapSettings().destinationCrs()
-        crsDest = QgsCoordinateReferenceSystem("EPSG:4326")
+        crs_src = self.iface.mapCanvas().mapSettings().destinationCrs()
+        crs_dest = QgsCoordinateReferenceSystem("EPSG:4326")
 
-        transformContext = QgsProject.instance().transformContext()
-        xform = QgsCoordinateTransform(crsSrc, crsDest, transformContext)
+        transform_context = QgsProject.instance().transformContext()
+        xform = QgsCoordinateTransform(crs_src, crs_dest, transform_context)
 
         transformed: QgsRectangle = xform.transform(extent)
 
@@ -335,13 +342,22 @@ class OrkamvDataApiPlugin:
         QgsApplication.taskManager().addTask(self.resources_task)
 
     def download_finished(self):
-        print(self.geopackage_task.status())
-        print(self.resources_task.status())
-        if self.geopackage_task.status() == QgsTask.Complete and self.resources_task.status() == QgsTask.Complete:
-            for layer_name in self.resources_task.layer_order:
-                layer = self.geopackage_task.layers[layer_name]
-                layer.loadNamedStyle(self.resources_task.style_files[layer.name()])
-                QgsProject.instance().addMapLayer(layer)
+        if not self.geopackage_completed and self.geopackage_task.status() == QgsTask.Complete:
+            self.result_layers = self.geopackage_task.layers
+            self.geopackage_completed = True
+
+        if not self.resources_completed and self.resources_task.status() == QgsTask.Complete:
+            self.result_style_files = self.resources_task.style_files
+            self.result_symbols_dir = self.resources_task.symbols_dir
+            self.result_layer_order = self.resources_task.layer_order
+            self.resources_completed = True
+
+        if self.geopackage_completed and self.resources_completed:
+            for layer_name in self.result_layer_order:
+                if layer_name in self.result_layers:
+                    layer = self.result_layers[layer_name]
+                    layer.loadNamedStyle(self.result_style_files[layer.name()])
+                    QgsProject.instance().addMapLayer(layer)
 
             if self.temporary:
                 os.remove(self.target_dir)
@@ -349,5 +365,14 @@ class OrkamvDataApiPlugin:
             self.dlg.done(True)
 
     def update_progress(self):
-        avg = (self.geopackage_task.progress() * 3 + self.resources_task.progress()) / 4
-        self.dlg.download_progress_bar.setValue(avg)
+        if self.resources_completed:
+            progress = 25
+        else:
+            progress = self.resources_task.progress() / 4
+
+        if self.geopackage_completed:
+            progress += 75
+        else:
+            progress += self.geopackage_task.progress() * 3 / 4
+
+        self.dlg.download_progress_bar.setValue(progress)
