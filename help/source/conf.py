@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-# GeopackageDownloader documentation build configuration file, created by
+# ORKa.MV Data API documentation build configuration file, created by
 # sphinx-quickstart on Sun Feb 12 17:11:03 2012.
 #
 # This file is execfile()d with the current directory set to its containing dir.
@@ -40,7 +40,7 @@ source_suffix = '.rst'
 master_doc = 'index'
 
 # General information about the project.
-project = u'GeopackageDownloader'
+project = u'ORKa.MV Data API'
 copyright = u'2013, terrestris GmbH & Co. KG'
 
 # The version info for the project you're documenting, acts as replacement for

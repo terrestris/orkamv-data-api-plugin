@@ -39,7 +39,6 @@ class GeopackageTask(QgsTask):
     def get_job_status(self) -> bool:
         req = QNetworkRequest()
         req.setUrl(QUrl(f'{self.base_url}/jobs/{self.job_id}'))
-        # req.setHeader(QNetworkRequest.ContentTypeHeader, 'application/json')
 
         res = QgsNetworkAccessManager.blockingGet(req, forceRefresh=True)
         res_data = json.loads(res.content().data().decode('utf8'))
@@ -47,10 +46,10 @@ class GeopackageTask(QgsTask):
         if res_data['status'] == 'CREATED':
             self.data_id = res_data['data_id']
             return True
-        elif res_data['status'] == 'ERROR':
-            raise Exception('error')
-        else:
+        elif res_data['status'] == 'RUNNING':
             return False
+        else:
+            raise Exception(res_data)
 
     def run(self):
         self.setProgress(10)
@@ -58,7 +57,7 @@ class GeopackageTask(QgsTask):
         self.setProgress(20)
         while not self.get_job_status():
             sleep(0.5)
-        self.setProgress(70)
+        self.setProgress(80)
 
         self.download_file()
         self.setProgress(100)

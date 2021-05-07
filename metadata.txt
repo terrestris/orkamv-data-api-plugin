@@ -3,9 +3,9 @@
 # This file should be included when you package your plugin.# Mandatory items:
 
 [general]
-name=Geopackage Downloader
+name=ORKa.MV Data API
 qgisMinimumVersion=3.0
-description=This package downloads a geopackage from a BBOX
+description=This plugin downloads a geopackage from the ORKa.MV Data API
 version=0.1
 author=terrestris GmbH & Co. KG
 email=info@terrestris.de

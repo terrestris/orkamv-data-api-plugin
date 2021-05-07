@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>GeopackageDownloaderDialogBase</class>
- <widget class="QDialog" name="GeopackageDownloaderDialogBase">
+ <class>OrkamvDataApiPluginDialogBase</class>
+ <widget class="QDialog" name="OrkamvDataApiPluginDialogBase">
   <property name="geometry">
    <rect>
     <x>0</x>
@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Geopackage Downloader</string>
+   <string>ORKa.MV Data API</string>
   </property>
   <widget class="QWidget" name="formLayoutWidget">
    <property name="geometry">
@@ -137,7 +137,7 @@
     </font>
    </property>
    <property name="text">
-    <string>OrKa Geopackage Downloader</string>
+    <string>ORKa.MV Data API</string>
    </property>
    <property name="alignment">
     <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>

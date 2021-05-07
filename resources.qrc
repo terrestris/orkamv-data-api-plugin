@@ -1,5 +1,5 @@
 <RCC>
-    <qresource prefix="/plugins/geopackage_downloader" >
+    <qresource prefix="/plugins/orkamv_data_api" >
         <file>icon.png</file>
     </qresource>
 </RCC>
