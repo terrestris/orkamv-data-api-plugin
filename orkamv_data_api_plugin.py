@@ -23,7 +23,8 @@
 """
 import re
 import tempfile
-from typing import Union, Optional, Tuple, Dict, List
+from enum import Enum
+from typing import Optional, Tuple, Dict, List
 
 from qgis.PyQt.QtCore import QSettings, QTranslator, QCoreApplication
 from qgis.PyQt.QtGui import QIcon
@@ -31,7 +32,7 @@ from qgis.PyQt.QtWidgets import QAction
 from qgis.gui import QgisInterface
 
 from qgis.core import Qgis, QgsProject, QgsMapLayer, QgsRectangle, QgsApplication, QgsTask, \
-    QgsCoordinateReferenceSystem, QgsCoordinateTransform, QgsVectorLayer
+    QgsCoordinateReferenceSystem, QgsCoordinateTransform, QgsVectorLayer, QgsSettings
 
 from .resources_task import ResourcesTask
 from .geopackage_task import GeopackageTask
@@ -43,6 +44,10 @@ from .resources import *
 from .orkamv_data_api_plugin_dialog import OrkamvDataApiPluginDialog
 import os.path
 
+class TaskStatus(Enum):
+    STARTED = 1
+    CANCELLED = 2
+    COMPLETED = 3
 
 class OrkamvDataApiPlugin:
     """QGIS Plugin Implementation."""
@@ -51,12 +56,14 @@ class OrkamvDataApiPlugin:
     tool: Optional[DrawExtent] = None
     dlg: Optional[OrkamvDataApiPluginDialog] = None
     extent: Optional[Tuple[float, float, float, float]]
-    geopackage_task: Optional[GeopackageTask] = None
-    geopackage_completed = False
-    resources_task: Optional[ResourcesTask] = None
-    resources_completed = False
+
     temporary: bool = True
     target_dir: Optional[str] = None
+
+    geopackage_task: Optional[GeopackageTask] = None
+    resources_task: Optional[ResourcesTask] = None
+    geopackage_task_status: TaskStatus
+    resources_task_status: TaskStatus
 
     result_layers: Dict[str, QgsVectorLayer]
     result_layer_order: List[str]
@@ -230,6 +237,8 @@ class OrkamvDataApiPlugin:
             self.dlg.download_start_button.clicked.connect(self.start_download)
             self.dlg.persistance_radio_temporary.toggled.connect(self.toggle_persistance_mode)
             self.dlg.persistance_path_edit.editingFinished.connect(self.update_target_dir)
+        else:
+            self.reset()
 
         # show the dialog
         self.dlg.show()
@@ -238,6 +247,7 @@ class OrkamvDataApiPlugin:
 
         # Run the dialog event loop
         result = self.dlg.exec_()
+
         # See if OK was pressed
         if result:
             # Do something useful here - delete the line containing pass and
@@ -333,46 +343,80 @@ class OrkamvDataApiPlugin:
 
         self.geopackage_task = GeopackageTask(self.dlg.server_url_edit.text(), self.extent, self.target_dir)
         self.geopackage_task.progressChanged.connect(self.update_progress)
-        self.geopackage_task.taskCompleted.connect(self.download_finished)
+        self.geopackage_task.taskCompleted.connect(self.geopackage_completed)
+        self.geopackage_task.taskTerminated.connect(self.geopackage_terminated)
+        self.geopackage_task_status = TaskStatus.STARTED
         QgsApplication.taskManager().addTask(self.geopackage_task)
 
         self.resources_task = ResourcesTask(self.dlg.server_url_edit.text(), self.target_dir)
         self.resources_task.progressChanged.connect(self.update_progress)
-        self.resources_task.taskCompleted.connect(self.download_finished)
+        self.resources_task.taskCompleted.connect(self.resources_completed)
+        self.resources_task.taskTerminated.connect(self.resources_terminated)
+        self.resources_task_status = TaskStatus.STARTED
         QgsApplication.taskManager().addTask(self.resources_task)
 
+    def geopackage_terminated(self):
+        self.geopackage_task_status = TaskStatus.CANCELLED
+        if self.resources_task_status == TaskStatus.STARTED:
+            self.resources_task.cancel()
+        else:
+            self.download_terminated()
+
+    def resources_terminated(self):
+        self.resources_task_status = TaskStatus.CANCELLED
+        if self.geopackage_task_status == TaskStatus.STARTED:
+            self.geopackage_task.cancel()
+        else:
+            self.download_terminated()
+
+    def download_terminated(self):
+        self.iface.messageBar().pushMessage('Could not start download job. Please try again in a few minutes',
+                                            level=Qgis.Warning)
+        self.reset()
+
+    def geopackage_completed(self):
+        self.geopackage_task_status = TaskStatus.COMPLETED
+        self.result_layers = self.geopackage_task.get_results()
+        if self.resources_task_status == TaskStatus.COMPLETED:
+            self.download_finished()
+
+    def resources_completed(self):
+        self.resources_task_status = TaskStatus.COMPLETED
+        self.result_layer_order, self.result_style_files = self.resources_task.get_results()
+        if self.geopackage_task_status == TaskStatus.COMPLETED:
+            self.download_finished()
+
     def download_finished(self):
-        if not self.geopackage_completed and self.geopackage_task.status() == QgsTask.Complete:
-            self.result_layers = self.geopackage_task.layers
-            self.geopackage_completed = True
+        root = QgsProject.instance().layerTreeRoot()
+        group = root.addGroup('ORKa.MV Data API')
 
-        if not self.resources_completed and self.resources_task.status() == QgsTask.Complete:
-            self.result_style_files = self.resources_task.style_files
-            self.result_symbols_dir = self.resources_task.symbols_dir
-            self.result_layer_order = self.resources_task.layer_order
-            self.resources_completed = True
+        for layer_name in self.resources_task.layer_order:
+            if layer_name in self.geopackage_task.layers:
+                layer = self.geopackage_task.layers[layer_name]
+                if layer_name in self.resources_task.style_files:
+                    layer.loadNamedStyle(self.resources_task.style_files[layer_name])
+                QgsProject.instance().addMapLayer(layer, False)
+                group.addLayer(layer)
 
-        if self.geopackage_completed and self.resources_completed:
-            for layer_name in self.result_layer_order:
-                if layer_name in self.result_layers:
-                    layer = self.result_layers[layer_name]
-                    layer.loadNamedStyle(self.result_style_files[layer.name()])
-                    QgsProject.instance().addMapLayer(layer)
-
-            if self.temporary:
-                os.remove(self.target_dir)
-
-            self.dlg.done(True)
+        self.dlg.done(True)
 
     def update_progress(self):
-        if self.resources_completed:
+        if self.resources_task_status == TaskStatus.CANCELLED or self.geopackage_task_status == TaskStatus.CANCELLED:
+            return
+
+        if self.resources_task_status == TaskStatus.COMPLETED:
             progress = 25
         else:
             progress = self.resources_task.progress() / 4
 
-        if self.geopackage_completed:
+        if self.geopackage_task_status == TaskStatus.COMPLETED:
             progress += 75
         else:
             progress += self.geopackage_task.progress() * 3 / 4
 
         self.dlg.download_progress_bar.setValue(progress)
+
+    def reset(self):
+        print('reset')
+        self.dlg.download_progress_bar.setValue(0)
+        self.check_required_for_download()

@@ -5,7 +5,7 @@ from time import sleep
 from typing import Tuple, Dict
 
 from PyQt5.QtCore import QUrl
-from PyQt5.QtNetwork import QNetworkRequest
+from PyQt5.QtNetwork import QNetworkRequest, QNetworkReply
 from qgis._core import QgsNetworkAccessManager, QgsTask, QgsVectorLayer, QgsDataProvider
 
 
@@ -19,9 +19,9 @@ class GeopackageTask(QgsTask):
         self.base_url = base_url[:-1] if base_url.endswith('/') else base_url
         self.extent = extent
         self.target_dir = target_dir
-        super().__init__('Download Geopackage Job', QgsTask.CanCancel) # TODO: can cancel? better description
+        super().__init__('Download Geopackage Job', QgsTask.Flag()) # TODO: better description
 
-    def start_job(self):
+    def start_job(self) -> bool:
         req_data = json.dumps({'bbox': self.extent}).encode('utf8')
 
         req = QNetworkRequest()
@@ -29,12 +29,15 @@ class GeopackageTask(QgsTask):
         req.setHeader(QNetworkRequest.ContentTypeHeader, 'application/json')
 
         res = QgsNetworkAccessManager.blockingPost(req, data=req_data, forceRefresh=True)
+
         res_data = json.loads(res.content().data().decode('utf8'))
 
         if not res_data['success']:
-            raise Exception('not successful')
+            return False
 
         self.job_id = res_data['job_id']
+
+        return True
 
     def get_job_status(self) -> bool:
         req = QNetworkRequest()
@@ -53,15 +56,25 @@ class GeopackageTask(QgsTask):
 
     def run(self):
         self.setProgress(10)
-        self.start_job()
+        if not self.start_job() or self.isCanceled():
+            return False
+
         self.setProgress(20)
         while not self.get_job_status():
+            if self.isCanceled():
+                return False
             sleep(0.5)
+
+        if self.isCanceled():
+            return False
+
         self.setProgress(80)
-
         self.download_file()
-        self.setProgress(100)
 
+        if self.isCanceled():
+            return False
+
+        self.setProgress(100)
         return True
 
     def download_file(self):
@@ -83,3 +96,6 @@ class GeopackageTask(QgsTask):
 
         if self.target_dir is None:
             os.remove(file_name)
+
+    def get_results(self) -> Dict[str, QgsVectorLayer]:
+        return self.layers
