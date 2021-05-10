@@ -113,16 +113,6 @@
       </property>
      </widget>
     </item>
-    <item row="6" column="1">
-     <widget class="QLineEdit" name="persistance_path_edit">
-      <property name="enabled">
-       <bool>false</bool>
-      </property>
-      <property name="text">
-       <string/>
-      </property>
-     </widget>
-    </item>
     <item row="7" column="1">
      <widget class="QLabel" name="path_help">
       <property name="font">
@@ -137,6 +127,13 @@
     </item>
     <item row="1" column="1">
      <widget class="QgsExtentWidget" name="extent_widget" native="true"/>
+    </item>
+    <item row="6" column="1">
+     <widget class="QgsFileWidget" name="persistance_path_widget" native="true">
+      <property name="enabled">
+       <bool>false</bool>
+      </property>
+     </widget>
     </item>
    </layout>
   </widget>
@@ -208,6 +205,12 @@
    <class>QgsExtentWidget</class>
    <extends>QWidget</extends>
    <header>/usr/include/qgis/qgsextentwidget.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>QgsFileWidget</class>
+   <extends>QWidget</extends>
+   <header>qgsfilewidget.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

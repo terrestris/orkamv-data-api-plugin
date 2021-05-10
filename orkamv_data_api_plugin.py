@@ -21,18 +21,17 @@
  *                                                                         *
  ***************************************************************************/
 """
-import re
 import tempfile
 from enum import Enum
-from typing import Optional, Tuple, Dict, List
+from typing import Optional, Dict, List
 
 from qgis.PyQt.QtCore import QSettings, QTranslator, QCoreApplication
 from qgis.PyQt.QtGui import QIcon
-from qgis.PyQt.QtWidgets import QAction
-from qgis.gui import QgisInterface, QgsExtentWidget
+from qgis.PyQt.QtWidgets import QAction, QMessageBox
+from qgis.gui import QgisInterface, QgsFileWidget
 
-from qgis.core import Qgis, QgsProject, QgsMapLayer, QgsRectangle, QgsApplication, QgsTask, \
-    QgsCoordinateReferenceSystem, QgsCoordinateTransform, QgsVectorLayer, QgsSettings
+from qgis.core import Qgis, QgsProject, QgsApplication, \
+    QgsCoordinateReferenceSystem, QgsVectorLayer
 
 from .resources_task import ResourcesTask
 from .geopackage_task import GeopackageTask
@@ -43,10 +42,12 @@ from .resources import *
 from .orkamv_data_api_plugin_dialog import OrkamvDataApiPluginDialog
 import os.path
 
+
 class TaskStatus(Enum):
     STARTED = 1
     CANCELLED = 2
     COMPLETED = 3
+
 
 class OrkamvDataApiPlugin:
     """QGIS Plugin Implementation."""
@@ -215,13 +216,9 @@ class OrkamvDataApiPlugin:
             self.first_start = False
             self.dlg = OrkamvDataApiPluginDialog()
 
-            # Set Defaults
-            home = os.path.expanduser('~')
-            self.dlg.persistance_path_edit.setText(os.path.join(home, 'Downloads'))
             self.dlg.server_url_edit.setText('http://orka-mv.terrestris.de/api/')
 
             # connect handlers
-            self.dlg.extent_widget.extentChanged.connect(self.check_required_for_download)
             self.dlg.download_start_button.clicked.connect(self.start_download)
             self.dlg.persistance_radio_temporary.toggled.connect(self.toggle_persistance_mode)
             self.dlg.svg_combo_box.currentIndexChanged.connect(self.check_required_for_download)
@@ -229,7 +226,16 @@ class OrkamvDataApiPlugin:
             # setup extent widget
             self.dlg.extent_widget.setOutputCrs(QgsCoordinateReferenceSystem("EPSG:4326"))
             self.dlg.extent_widget.setMapCanvas(self.iface.mapCanvas())
+            self.dlg.extent_widget.extentChanged.connect(self.check_required_for_download)
             # self.dlg.extent_widget.setOriginalExtent()
+
+            # setup file widget
+            home = os.path.expanduser('~')
+            self.dlg.persistance_path_widget.setDefaultRoot(home)
+            self.dlg.persistance_path_widget.setStorageMode(QgsFileWidget.GetDirectory)
+            self.dlg.persistance_path_widget.fileChanged.connect(self.check_dir)
+            self.dlg.persistance_path_widget.fileChanged.connect(self.check_required_for_download)
+            self.dlg.persistance_path_widget.lineEdit().setEnabled(False)
 
             self.check_required_for_download()
         else:
@@ -252,26 +258,39 @@ class OrkamvDataApiPlugin:
     def read_svg_dirs(self):
         self.dlg.svg_combo_box.clear()
 
-        folders = QgsSettings().value('svg/searchPathsForSVG')
+        folders = QgsApplication.instance().svgPaths()
 
-        if folders is None or len(folders) == 0:
+        if len(folders) == 0:
             self.dlg.svg_combo_box.addItem('WARNING: No SVG folder available! Please check your preferences.', None)
         else:
             for folder in folders:
                 self.dlg.svg_combo_box.addItem(folder, folder)
             self.dlg.svg_combo_box.setCurrentIndex(len(folders) - 1)
 
+    def check_dir(self):
+        if self.dlg.persistance_path_widget.filePath() != '' and \
+                any(os.scandir(self.dlg.persistance_path_widget.filePath())):
+            dialog = QMessageBox()
+            dialog.setText('The directory is not empty')
+            dialog.setInformativeText('Do you want to overwrite the content?')
+            dialog.setStandardButtons(QMessageBox.Yes | QMessageBox.No)
+            dialog.setDefaultButton(QMessageBox.No)
+            result = dialog.exec_()
+            if result == QMessageBox.No:
+                self.dlg.persistance_path_widget.setFilePath('')
+
     def toggle_persistance_mode(self):
         if self.dlg.persistance_radio_todir.isChecked():
-            self.dlg.persistance_path_edit.setEnabled(True)
+            self.dlg.persistance_path_widget.setEnabled(True)
         else:
-            self.dlg.persistance_path_edit.setEnabled(False)
+            self.dlg.persistance_path_widget.setEnabled(False)
 
     def check_required_for_download(self):
-        print(self.dlg.extent_widget.isValid())
-        print(self.dlg.svg_combo_box.currentData())
+        path = self.dlg.persistance_path_widget.filePath()
         check = self.dlg.extent_widget.isValid() \
-                and self.dlg.svg_combo_box.currentData() is not None
+                and self.dlg.svg_combo_box.currentData() is not None \
+                and path is not None \
+                and path != ''
         self.dlg.download_start_button.setEnabled(check)
 
     def start_download(self):
@@ -282,7 +301,7 @@ class OrkamvDataApiPlugin:
         if self.dlg.persistance_radio_temporary.isChecked():
             target_dir = tempfile.mkdtemp()
         else:
-            target_dir = self.dlg.persistance_path_edit.text()
+            target_dir = self.dlg.persistance_path_widget.filePath()
 
         extent = self.dlg.extent_widget.outputExtent()
 
@@ -317,7 +336,6 @@ class OrkamvDataApiPlugin:
             self.download_terminated()
 
     def download_terminated(self):
-
         self.iface.messageBar().pushMessage('Could not start download job. Please try again in a few minutes',
                                             level=Qgis.Warning)
         self.reset()
@@ -336,7 +354,7 @@ class OrkamvDataApiPlugin:
 
     def download_finished(self):
         root = QgsProject.instance().layerTreeRoot()
-        group = root.addGroup('ORKa.MV Data API')
+        group = root.insertGroup(0, 'ORKa.MV Data API')
 
         for layer_name in reversed(self.resources_task.layer_order):
             if layer_name in self.geopackage_task.layers:
@@ -365,6 +383,5 @@ class OrkamvDataApiPlugin:
         self.dlg.download_progress_bar.setValue(progress)
 
     def reset(self):
-        print('reset')
         self.dlg.download_progress_bar.setValue(0)
         self.check_required_for_download()

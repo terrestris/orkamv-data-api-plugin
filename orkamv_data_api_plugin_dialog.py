@@ -30,7 +30,7 @@ from qgis.PyQt import uic
 from qgis.PyQt import QtWidgets
 
 # This loads your .ui file so that PyQt can populate your plugin with the elements from Qt Designer
-from qgis._gui import QgsExtentWidget
+from qgis._gui import QgsExtentWidget, QgsFileWidget
 
 FORM_CLASS, _ = uic.loadUiType(os.path.join(
     os.path.dirname(__file__), 'orkamv_data_api_plugin_dialog_base.ui'))
@@ -41,11 +41,11 @@ class OrkamvDataApiPluginDialog(QtWidgets.QDialog, FORM_CLASS):
     download_cancel_button: QPushButton
     download_progress_bar: QProgressBar
     extent_widget: QgsExtentWidget
-    # extent_placeholder: QVBoxLayout
     server_url_edit: QLineEdit
     persistance_radio_temporary: QRadioButton
     persistance_radio_todir: QRadioButton
-    persistance_path_edit: QLineEdit
+    # persistance_path_edit: QLineEdit
+    persistance_path_widget: QgsFileWidget
     svg_combo_box: QComboBox
 
     def __init__(self, parent=None):
