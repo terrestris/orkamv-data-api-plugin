@@ -25,27 +25,28 @@
 import os
 from typing import Optional
 
-from PyQt5.QtWidgets import QPushButton, QLineEdit, QProgressBar, QComboBox, QRadioButton
+from PyQt5.QtWidgets import QPushButton, QLineEdit, QProgressBar, QComboBox, QRadioButton, QVBoxLayout
 from qgis.PyQt import uic
 from qgis.PyQt import QtWidgets
 
 # This loads your .ui file so that PyQt can populate your plugin with the elements from Qt Designer
+from qgis._gui import QgsExtentWidget
+
 FORM_CLASS, _ = uic.loadUiType(os.path.join(
     os.path.dirname(__file__), 'orkamv_data_api_plugin_dialog_base.ui'))
 
 
 class OrkamvDataApiPluginDialog(QtWidgets.QDialog, FORM_CLASS):
-    draw_extent_button: QPushButton
-    extent_edit: QLineEdit
     download_start_button: QPushButton
     download_cancel_button: QPushButton
     download_progress_bar: QProgressBar
-    layer_extent_combo_box: QComboBox
-    visible_extent_button: QPushButton
+    extent_widget: QgsExtentWidget
+    # extent_placeholder: QVBoxLayout
     server_url_edit: QLineEdit
     persistance_radio_temporary: QRadioButton
     persistance_radio_todir: QRadioButton
     persistance_path_edit: QLineEdit
+    svg_combo_box: QComboBox
 
     def __init__(self, parent=None):
         """Constructor."""
@@ -56,4 +57,7 @@ class OrkamvDataApiPluginDialog(QtWidgets.QDialog, FORM_CLASS):
         # http://qt-project.org/doc/qt-4.8/designer-using-a-ui-file.html
         # #widgets-and-dialogs-with-auto-connect
         self.setupUi(self)
+        #
+        # self.extent_widget = QgsExtentWidget(parent=self, style=QgsExtentWidget.ExpandedStyle)
+        # self.extent_placeholder.addWidget(self.extent_widget)
 

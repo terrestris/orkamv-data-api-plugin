@@ -6,7 +6,7 @@ from typing import Tuple, Dict
 
 from PyQt5.QtCore import QUrl
 from PyQt5.QtNetwork import QNetworkRequest, QNetworkReply
-from qgis._core import QgsNetworkAccessManager, QgsTask, QgsVectorLayer, QgsDataProvider
+from qgis._core import QgsNetworkAccessManager, QgsTask, QgsVectorLayer, QgsDataProvider, QgsRectangle
 
 
 class GeopackageTask(QgsTask):
@@ -15,9 +15,14 @@ class GeopackageTask(QgsTask):
     data_id: str
     layers: Dict[str, QgsVectorLayer] = {}
 
-    def __init__(self, base_url: str, extent: Tuple[float, float, float, float], target_dir: str):
+    def __init__(self, base_url: str, target_dir: str, extent: QgsRectangle):
         self.base_url = base_url[:-1] if base_url.endswith('/') else base_url
-        self.extent = extent
+        self.extent = (
+            extent.xMinimum(),
+            extent.yMinimum(),
+            extent.xMaximum(),
+            extent.yMaximum()
+        )
         self.target_dir = target_dir
         super().__init__('Download Geopackage Job', QgsTask.Flag()) # TODO: better description
 

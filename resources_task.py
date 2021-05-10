@@ -14,9 +14,10 @@ class ResourcesTask(QgsTask):
     style_files: Dict[str, str] = {}
     layer_order: List[str]
 
-    def __init__(self, base_url: str, target_dir: str):
+    def __init__(self, base_url: str, target_dir: str, svg_dir: str):
         self.base_url = base_url[:-1] if base_url.endswith('/') else base_url
         self.target_dir = target_dir
+        self.svg_dir = svg_dir
         super().__init__('Download Resources Job', QgsTask.CanCancel)  # TODO: better description
 
     def run(self):
@@ -49,14 +50,11 @@ class ResourcesTask(QgsTask):
             layer_name = os.path.splitext(file_name)[0]
             self.style_files[layer_name] = os.path.join(styles_dir, file_name)
 
-        qs = QgsSettings()
-        svg_folder = qs.value('svg/searchPathsForSVG')[-1]
+        os.makedirs(self.svg_dir, exist_ok=True)
         symbols_dir = os.path.join(self.target_dir, 'symbols')
 
-        os.makedirs(svg_folder, exist_ok=True)
-
         for symbol_file_name in os.listdir(symbols_dir):
-            shutil.copy(os.path.join(symbols_dir, symbol_file_name), svg_folder)
+            shutil.copy(os.path.join(symbols_dir, symbol_file_name), self.svg_dir)
 
         with open(os.path.join(self.target_dir, 'layers.json'), 'r') as layer_order_file:
             data = json.loads(layer_order_file.read())

@@ -6,9 +6,14 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>420</width>
-    <height>250</height>
+    <width>424</width>
+    <height>345</height>
    </rect>
+  </property>
+  <property name="font">
+   <font>
+    <pointsize>8</pointsize>
+   </font>
   </property>
   <property name="windowTitle">
    <string>ORKa.MV Data API</string>
@@ -19,7 +24,7 @@
      <x>10</x>
      <y>40</y>
      <width>401</width>
-     <height>151</height>
+     <height>240</height>
     </rect>
    </property>
    <layout class="QFormLayout" name="form_layout">
@@ -44,45 +49,31 @@
       </property>
      </widget>
     </item>
-    <item row="1" column="1">
-     <layout class="QHBoxLayout" name="extent_selection_layout">
-      <item>
-       <widget class="QPushButton" name="visible_extent_button">
-        <property name="text">
-         <string>Visible</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QComboBox" name="layer_extent_combo_box"/>
-      </item>
-      <item>
-       <widget class="QPushButton" name="draw_extent_button">
-        <property name="text">
-         <string>Draw</string>
-        </property>
-       </widget>
-      </item>
-     </layout>
-    </item>
     <item row="2" column="0">
-     <widget class="QLabel" name="extent_edit_label">
+     <widget class="QLabel" name="svg_label">
       <property name="text">
-       <string>Extent:</string>
+       <string>SVG Folder:</string>
       </property>
      </widget>
     </item>
     <item row="2" column="1">
-     <widget class="QLineEdit" name="extent_edit"/>
+     <widget class="QComboBox" name="svg_combo_box"/>
     </item>
-    <item row="3" column="0">
+    <item row="3" column="1">
+     <widget class="QLabel" name="svg_help">
+      <property name="text">
+       <string>Available SVG folders are read from your preferences.</string>
+      </property>
+     </widget>
+    </item>
+    <item row="4" column="0">
      <widget class="QLabel" name="persistance_label">
       <property name="text">
        <string>Persistance:</string>
       </property>
      </widget>
     </item>
-    <item row="3" column="1">
+    <item row="4" column="1">
      <layout class="QHBoxLayout" name="persistance_layout">
       <item>
        <widget class="QRadioButton" name="persistance_radio_temporary">
@@ -103,14 +94,26 @@
       </item>
      </layout>
     </item>
-    <item row="4" column="0">
-     <widget class="QLabel" name="persistance_path_label">
+    <item row="5" column="1">
+     <widget class="QLabel" name="persistance_help">
+      <property name="font">
+       <font>
+        <pointsize>8</pointsize>
+       </font>
+      </property>
       <property name="text">
-       <string>Path:</string>
+       <string>temporary files will be deleted by the OS.</string>
       </property>
      </widget>
     </item>
-    <item row="4" column="1">
+    <item row="6" column="0">
+     <widget class="QLabel" name="persistance_path_label">
+      <property name="text">
+       <string>Target Path:</string>
+      </property>
+     </widget>
+    </item>
+    <item row="6" column="1">
      <widget class="QLineEdit" name="persistance_path_edit">
       <property name="enabled">
        <bool>false</bool>
@@ -119,6 +122,21 @@
        <string/>
       </property>
      </widget>
+    </item>
+    <item row="7" column="1">
+     <widget class="QLabel" name="path_help">
+      <property name="font">
+       <font>
+        <pointsize>8</pointsize>
+       </font>
+      </property>
+      <property name="text">
+       <string>empty target directory for downloaded files.</string>
+      </property>
+     </widget>
+    </item>
+    <item row="1" column="1">
+     <widget class="QgsExtentWidget" name="extent_widget" native="true"/>
     </item>
    </layout>
   </widget>
@@ -147,7 +165,7 @@
    <property name="geometry">
     <rect>
      <x>10</x>
-     <y>200</y>
+     <y>300</y>
      <width>401</width>
      <height>31</height>
     </rect>
@@ -185,6 +203,14 @@
    </layout>
   </widget>
  </widget>
+ <customwidgets>
+  <customwidget>
+   <class>QgsExtentWidget</class>
+   <extends>QWidget</extends>
+   <header>/usr/include/qgis/qgsextentwidget.h</header>
+   <container>1</container>
+  </customwidget>
+ </customwidgets>
  <resources/>
  <connections/>
 </ui>

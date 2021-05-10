@@ -29,14 +29,13 @@ from typing import Optional, Tuple, Dict, List
 from qgis.PyQt.QtCore import QSettings, QTranslator, QCoreApplication
 from qgis.PyQt.QtGui import QIcon
 from qgis.PyQt.QtWidgets import QAction
-from qgis.gui import QgisInterface
+from qgis.gui import QgisInterface, QgsExtentWidget
 
 from qgis.core import Qgis, QgsProject, QgsMapLayer, QgsRectangle, QgsApplication, QgsTask, \
     QgsCoordinateReferenceSystem, QgsCoordinateTransform, QgsVectorLayer, QgsSettings
 
 from .resources_task import ResourcesTask
 from .geopackage_task import GeopackageTask
-from .draw_extent_tool import DrawExtent
 
 # Initialize Qt resources from file resources.py
 from .resources import *
@@ -53,12 +52,7 @@ class OrkamvDataApiPlugin:
     """QGIS Plugin Implementation."""
 
     iface: QgisInterface
-    tool: Optional[DrawExtent] = None
     dlg: Optional[OrkamvDataApiPluginDialog] = None
-    extent: Optional[Tuple[float, float, float, float]]
-
-    temporary: bool = True
-    target_dir: Optional[str] = None
 
     geopackage_task: Optional[GeopackageTask] = None
     resources_task: Optional[ResourcesTask] = None
@@ -211,9 +205,6 @@ class OrkamvDataApiPlugin:
                 self.tr(u'&ORKa.MV Data API'),
                 action)
             self.iface.removeToolBarIcon(action)
-        if self.tool is not None:
-            self.tool.deactivate()
-            self.tool = None
 
     def run(self):
         """Run method that performs all the real work"""
@@ -230,20 +221,24 @@ class OrkamvDataApiPlugin:
             self.dlg.server_url_edit.setText('http://orka-mv.terrestris.de/api/')
 
             # connect handlers
-            self.dlg.draw_extent_button.clicked.connect(self.draw_extent)
-            self.dlg.extent_edit.editingFinished.connect(self.edit_extent)
-            self.dlg.layer_extent_combo_box.currentIndexChanged.connect(self.select_extent_layer)
-            self.dlg.visible_extent_button.clicked.connect(self.read_visible_extent)
+            self.dlg.extent_widget.extentChanged.connect(self.check_required_for_download)
             self.dlg.download_start_button.clicked.connect(self.start_download)
             self.dlg.persistance_radio_temporary.toggled.connect(self.toggle_persistance_mode)
-            self.dlg.persistance_path_edit.editingFinished.connect(self.update_target_dir)
+            self.dlg.svg_combo_box.currentIndexChanged.connect(self.check_required_for_download)
+
+            # setup extent widget
+            self.dlg.extent_widget.setOutputCrs(QgsCoordinateReferenceSystem("EPSG:4326"))
+            self.dlg.extent_widget.setMapCanvas(self.iface.mapCanvas())
+            # self.dlg.extent_widget.setOriginalExtent()
+
+            self.check_required_for_download()
         else:
             self.reset()
 
+        self.read_svg_dirs()
+
         # show the dialog
         self.dlg.show()
-
-        self.read_layers()
 
         # Run the dialog event loop
         result = self.dlg.exec_()
@@ -254,101 +249,54 @@ class OrkamvDataApiPlugin:
             # substitute with your code.
             pass
 
-    def read_layers(self):
-        self.dlg.layer_extent_combo_box.clear()
-        self.dlg.layer_extent_combo_box.addItem('Select Layer ...', None)
-        layer: QgsMapLayer
-        for layer in QgsProject.instance().mapLayers().values():
-            self.dlg.layer_extent_combo_box.addItem(layer.name(), layer)
+    def read_svg_dirs(self):
+        self.dlg.svg_combo_box.clear()
 
-    def draw_extent(self):
-        if self.tool is not None:
-            self.tool.reset()
-        self.tool = DrawExtent(self.iface)
-        self.tool.selection_done.connect(self.finished_bbox)
+        qs = QgsSettings()
+        folders = qs.value('svg/searchPathsForSVG')
 
-    def set_extent_from_map(self, extent: QgsRectangle):
-        crs_src = self.iface.mapCanvas().mapSettings().destinationCrs()
-        crs_dest = QgsCoordinateReferenceSystem("EPSG:4326")
-
-        transform_context = QgsProject.instance().transformContext()
-        xform = QgsCoordinateTransform(crs_src, crs_dest, transform_context)
-
-        transformed: QgsRectangle = xform.transform(extent)
-
-        self.extent = (
-            transformed.xMinimum(),
-            transformed.yMinimum(),
-            transformed.xMaximum(),
-            transformed.yMaximum()
-        )
-        self.dlg.extent_edit.setText(', '.join([str(pos) for pos in self.extent]))
-        self.check_required_for_download()
-
-    def edit_extent(self):
-        pattern = re.compile(r'^\s*(\d+\.?\d*),\s*(\d+\.?\d*),\s*(\d+\.?\d*),\s*(\d+\.?\d*)\s*$')
-        result = pattern.match(self.dlg.extent_edit.text())
-        if result is None:
-            self.extent = None
-            self.iface.messageBar().pushMessage(
-                'Entered extent is malformed',
-                level=Qgis.Warning,
-                duration=10
-            )
+        if len(folders) == 0:
+            self.dlg.svg_combo_box.addItem('WARNING: No SVG folder available! Please check your preferences.', None)
         else:
-            self.extent = (
-                float(result.group(1)),
-                float(result.group(2)),
-                float(result.group(3)),
-                float(result.group(4))
-            )
-        self.check_required_for_download()
-
-    def finished_bbox(self):
-        self.set_extent_from_map(self.tool.get_bbox())
-        self.tool.deactivate()
-        self.tool = None
-        self.dlg.layer_extent_combo_box.setCurrentIndex(0)
-
-    def select_extent_layer(self, index):
-        if index > 0:
-            rect: QgsRectangle = self.dlg.layer_extent_combo_box.itemData(index).extent()
-            self.set_extent_from_map(rect)
-
-    def read_visible_extent(self):
-        rect: QgsRectangle = self.iface.mapCanvas().extent()
-        self.set_extent_from_map(rect)
+            for folder in folders:
+                self.dlg.svg_combo_box.addItem(folder, folder)
+            self.dlg.svg_combo_box.setCurrentIndex(len(folders) - 1)
 
     def toggle_persistance_mode(self):
         if self.dlg.persistance_radio_todir.isChecked():
             self.dlg.persistance_path_edit.setEnabled(True)
-            self.update_target_dir()
-            self.temporary = False
         else:
             self.dlg.persistance_path_edit.setEnabled(False)
-            self.target_dir = None
-            self.temporary = True
-
-    def update_target_dir(self):
-        self.target_dir = self.dlg.persistance_path_edit.text()
 
     def check_required_for_download(self):
-        self.dlg.download_start_button.setEnabled(self.extent is not None)
+        print(self.dlg.extent_widget.isValid())
+        print(self.dlg.svg_combo_box.currentData())
+        check = self.dlg.extent_widget.isValid() \
+                and self.dlg.svg_combo_box.currentData() is not None
+        self.dlg.download_start_button.setEnabled(check)
 
     def start_download(self):
         self.dlg.download_start_button.setEnabled(False)
 
-        if self.temporary:
-            self.target_dir = tempfile.mkdtemp()
+        url = self.dlg.server_url_edit.text()
 
-        self.geopackage_task = GeopackageTask(self.dlg.server_url_edit.text(), self.extent, self.target_dir)
+        if self.dlg.persistance_radio_temporary.isChecked():
+            target_dir = tempfile.mkdtemp()
+        else:
+            target_dir = self.dlg.persistance_path_edit.text()
+
+        extent = self.dlg.extent_widget.outputExtent()
+
+        svg_dir = self.dlg.svg_combo_box.currentData()
+
+        self.geopackage_task = GeopackageTask(url, target_dir, extent)
         self.geopackage_task.progressChanged.connect(self.update_progress)
         self.geopackage_task.taskCompleted.connect(self.geopackage_completed)
         self.geopackage_task.taskTerminated.connect(self.geopackage_terminated)
         self.geopackage_task_status = TaskStatus.STARTED
         QgsApplication.taskManager().addTask(self.geopackage_task)
 
-        self.resources_task = ResourcesTask(self.dlg.server_url_edit.text(), self.target_dir)
+        self.resources_task = ResourcesTask(url, target_dir, svg_dir)
         self.resources_task.progressChanged.connect(self.update_progress)
         self.resources_task.taskCompleted.connect(self.resources_completed)
         self.resources_task.taskTerminated.connect(self.resources_terminated)
@@ -390,7 +338,7 @@ class OrkamvDataApiPlugin:
         root = QgsProject.instance().layerTreeRoot()
         group = root.addGroup('ORKa.MV Data API')
 
-        for layer_name in self.resources_task.layer_order:
+        for layer_name in reversed(self.resources_task.layer_order):
             if layer_name in self.geopackage_task.layers:
                 layer = self.geopackage_task.layers[layer_name]
                 if layer_name in self.resources_task.style_files:
