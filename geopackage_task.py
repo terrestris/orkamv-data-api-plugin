@@ -1,11 +1,10 @@
 import json
 import os
-import tempfile
 from time import sleep
-from typing import Tuple, Dict
+from typing import Dict, Optional
 
 from PyQt5.QtCore import QUrl
-from PyQt5.QtNetwork import QNetworkRequest, QNetworkReply
+from PyQt5.QtNetwork import QNetworkRequest
 from qgis._core import QgsNetworkAccessManager, QgsTask, QgsVectorLayer, QgsDataProvider, QgsRectangle
 
 
@@ -14,6 +13,8 @@ class GeopackageTask(QgsTask):
     job_id: int
     data_id: str
     layers: Dict[str, QgsVectorLayer] = {}
+    error_reason: Optional[str] = None
+
 
     def __init__(self, base_url: str, target_dir: str, extent: QgsRectangle):
         self.base_url = base_url[:-1] if base_url.endswith('/') else base_url
@@ -24,9 +25,9 @@ class GeopackageTask(QgsTask):
             extent.yMaximum()
         )
         self.target_dir = target_dir
-        super().__init__('Download Geopackage Job', QgsTask.Flag()) # TODO: better description
+        super().__init__('Download Geopackage Job', QgsTask.Flag())  # TODO: better description
 
-    def start_job(self) -> bool:
+    def start_job(self):
         req_data = json.dumps({'bbox': self.extent}).encode('utf8')
 
         req = QNetworkRequest()
@@ -38,7 +39,9 @@ class GeopackageTask(QgsTask):
         res_data = json.loads(res.content().data().decode('utf8'))
 
         if not res_data['success']:
-            return False
+            if 'message' in req_data:
+                raise Exception(res_data['message'])
+            raise Exception('Failed to start job.')
 
         self.job_id = res_data['job_id']
 
@@ -57,30 +60,39 @@ class GeopackageTask(QgsTask):
         elif res_data['status'] == 'RUNNING':
             return False
         else:
-            raise Exception(res_data)
+            if 'message' in res_data:
+                raise Exception(res_data['message'])
+            raise Exception('Failed to get job status.')
 
     def run(self):
-        self.setProgress(10)
-        if not self.start_job() or self.isCanceled():
-            return False
+        try:
+            self.setProgress(10)
+            self.start_job()
 
-        self.setProgress(20)
-        while not self.get_job_status():
             if self.isCanceled():
                 return False
-            sleep(0.5)
 
-        if self.isCanceled():
+            self.setProgress(20)
+            while not self.get_job_status():
+                if self.isCanceled():
+                    return False
+                sleep(0.5)
+
+            if self.isCanceled():
+                return False
+
+            self.setProgress(80)
+            self.download_file()
+
+            if self.isCanceled():
+                return False
+
+            self.setProgress(100)
+            return True
+
+        except Exception as e:
+            self.error_reason = str(e)
             return False
-
-        self.setProgress(80)
-        self.download_file()
-
-        if self.isCanceled():
-            return False
-
-        self.setProgress(100)
-        return True
 
     def download_file(self):
         req = QNetworkRequest()

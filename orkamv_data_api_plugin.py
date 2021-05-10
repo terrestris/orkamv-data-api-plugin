@@ -252,10 +252,9 @@ class OrkamvDataApiPlugin:
     def read_svg_dirs(self):
         self.dlg.svg_combo_box.clear()
 
-        qs = QgsSettings()
-        folders = qs.value('svg/searchPathsForSVG')
+        folders = QgsSettings().value('svg/searchPathsForSVG')
 
-        if len(folders) == 0:
+        if folders is None or len(folders) == 0:
             self.dlg.svg_combo_box.addItem('WARNING: No SVG folder available! Please check your preferences.', None)
         else:
             for folder in folders:
@@ -318,6 +317,7 @@ class OrkamvDataApiPlugin:
             self.download_terminated()
 
     def download_terminated(self):
+
         self.iface.messageBar().pushMessage('Could not start download job. Please try again in a few minutes',
                                             level=Qgis.Warning)
         self.reset()
