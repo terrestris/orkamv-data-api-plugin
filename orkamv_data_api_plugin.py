@@ -210,8 +210,6 @@ class OrkamvDataApiPlugin:
             self.first_start = False
             self.dlg = OrkamvDataApiPluginDialog()
 
-            self.dlg.server_url_edit.setText('http://orka-mv.terrestris.de/api/')
-
             # connect handlers
             self.dlg.download_start_button.clicked.connect(self.start_download)
             self.dlg.persistance_radio_temporary.toggled.connect(self.toggle_persistance_mode)
@@ -221,7 +219,7 @@ class OrkamvDataApiPlugin:
             self.dlg.extent_widget.setOutputCrs(QgsCoordinateReferenceSystem("EPSG:4326"))
             self.dlg.extent_widget.setMapCanvas(self.iface.mapCanvas())
             self.dlg.extent_widget.extentChanged.connect(self.check_required_for_download)
-            self.dlg.extent_widget.setNullValueAllowed(True, 'Please choose an extent')
+            self.dlg.extent_widget.setNullValueAllowed(True, self.tr('Please choose an extent'))
             self.dlg.extent_widget.clear()
 
             # setup file widget
@@ -282,13 +280,13 @@ class OrkamvDataApiPlugin:
             self.dlg.persistance_path_widget.setEnabled(False)
 
     def check_required_for_download(self):
-        path = self.dlg.persistance_path_widget.filePath()
         path_valid = self.dlg.persistance_radio_temporary.isChecked() or \
-            (path is not None and path != '')
+                     self.dlg.persistance_path_widget.filePath()
         check = self.dlg.extent_widget.isValid() \
             and self.geopackage_task_status != TaskStatus.STARTED \
             and self.dlg.svg_combo_box.currentData() is not None \
-            and path_valid
+            and path_valid \
+            and self.dlg.server_url_edit.text()
         self.dlg.download_start_button.setEnabled(check)
 
     def start_download(self):
@@ -338,13 +336,13 @@ class OrkamvDataApiPlugin:
 
     def geopackage_completed(self):
         self.geopackage_task_status = TaskStatus.COMPLETED
-        self.result_layers = self.geopackage_task.get_results()
+        # self.result_layers = self.geopackage_task.get_results()
         if self.resources_task_status == TaskStatus.COMPLETED:
             self.download_finished()
 
     def resources_completed(self):
         self.resources_task_status = TaskStatus.COMPLETED
-        self.result_layer_order, self.result_style_files = self.resources_task.get_results()
+        # self.result_layer_order, self.result_style_files = self.resources_task.get_results()
         if self.geopackage_task_status == TaskStatus.COMPLETED:
             self.download_finished()
 
@@ -361,7 +359,7 @@ class OrkamvDataApiPlugin:
         group = root.insertGroup(0, 'ORKa.MV Data API')
 
         for layer_name in reversed(self.resources_task.layer_order):
-            if layer_name in self.geopackage_task.layers:
+            if layer_name in layers:
                 layer = layers[layer_name]
                 if layer_name in self.resources_task.style_files:
                     layer.loadNamedStyle(self.resources_task.style_files[layer_name])
