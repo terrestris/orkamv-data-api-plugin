@@ -45,7 +45,7 @@
     <item row="1" column="0">
      <widget class="QLabel" name="extent_selection_label">
       <property name="text">
-       <string>Kartenausschnitt:</string>
+       <string>Map extent:</string>
       </property>
      </widget>
     </item>
@@ -55,7 +55,7 @@
     <item row="2" column="0">
      <widget class="QLabel" name="svg_label">
       <property name="text">
-       <string>SVG Verzeichnis:</string>
+       <string>SVG folder:</string>
       </property>
      </widget>
     </item>
@@ -70,14 +70,14 @@
        </font>
       </property>
       <property name="text">
-       <string>Die für die Darstellung benötigten Icons werden in das angegeben Verzeichnis integriert.</string>
+       <string>The icons needed for display are integrated into the chosen SVG directory.</string>
       </property>
      </widget>
     </item>
     <item row="4" column="0">
      <widget class="QLabel" name="persistance_label">
       <property name="text">
-       <string>Speicherung:</string>
+       <string>Saving:</string>
       </property>
      </widget>
     </item>
@@ -86,7 +86,7 @@
       <item>
        <widget class="QRadioButton" name="persistance_radio_temporary">
         <property name="text">
-         <string>Temporär</string>
+         <string>Temporary</string>
         </property>
         <property name="checked">
          <bool>true</bool>
@@ -96,7 +96,7 @@
       <item>
        <widget class="QRadioButton" name="persistance_radio_todir">
         <property name="text">
-         <string>Verzeichnis</string>
+         <string>Directory</string>
         </property>
        </widget>
       </item>
@@ -105,7 +105,7 @@
     <item row="5" column="0">
      <widget class="QLabel" name="persistance_path_label">
       <property name="text">
-       <string>Zielverzeichnis:</string>
+       <string>Target directory:</string>
       </property>
      </widget>
     </item>
@@ -124,7 +124,7 @@
        </font>
       </property>
       <property name="text">
-       <string>Im Zielverzeichnis werden alle benötigten Daten abgelegt.</string>
+       <string>All needed files will be stored in the target directory.</string>
       </property>
      </widget>
     </item>
