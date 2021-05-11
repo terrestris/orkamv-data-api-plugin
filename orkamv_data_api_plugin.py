@@ -30,7 +30,7 @@ from qgis.PyQt.QtWidgets import QAction, QMessageBox
 from qgis.gui import QgisInterface, QgsFileWidget
 
 from qgis.core import Qgis, QgsProject, QgsApplication, \
-    QgsCoordinateReferenceSystem, QgsVectorLayer
+    QgsCoordinateReferenceSystem, QgsVectorLayer, QgsDataProvider
 
 from .types import TaskStatus, ErrorReason
 from .resources_task import ResourcesTask
@@ -349,12 +349,20 @@ class OrkamvDataApiPlugin:
             self.download_finished()
 
     def download_finished(self):
+        gpkg_layer = QgsVectorLayer(self.geopackage_task.file_name, 'parent', 'ogr')
+        layers: Dict[str, QgsVectorLayer] = {}
+
+        for sub_layer in gpkg_layer.dataProvider().subLayers():
+            name = sub_layer.split(QgsDataProvider.SUBLAYER_SEPARATOR)[1]
+            uri = f'{self.geopackage_task.file_name}|layername={name}'
+            layers[name] = QgsVectorLayer(uri, name, 'ogr')
+
         root = QgsProject.instance().layerTreeRoot()
         group = root.insertGroup(0, 'ORKa.MV Data API')
 
         for layer_name in reversed(self.resources_task.layer_order):
             if layer_name in self.geopackage_task.layers:
-                layer = self.geopackage_task.layers[layer_name]
+                layer = layers[layer_name]
                 if layer_name in self.resources_task.style_files:
                     layer.loadNamedStyle(self.resources_task.style_files[layer_name])
                 QgsProject.instance().addMapLayer(layer, False)

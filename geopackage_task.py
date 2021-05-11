@@ -14,7 +14,7 @@ class GeopackageTask(QgsTask):
 
     job_id: int
     data_id: str
-    layers: Dict[str, QgsVectorLayer] = {}
+    file_name: str
     error_reason: Optional[ErrorReason] = None
 
     def __init__(self, base_url: str, target_dir: str, extent: QgsRectangle):
@@ -75,19 +75,10 @@ class GeopackageTask(QgsTask):
 
         res = QgsNetworkAccessManager.blockingGet(req, forceRefresh=True)
 
-        file_name = os.path.abspath(os.path.join(self.target_dir, 'geopackage.gpkg'))
+        self.file_name = os.path.abspath(os.path.join(self.target_dir, 'geopackage.gpkg'))
 
-        with open(file_name, 'w+b') as fp:
+        with open(self.file_name, 'w+b') as fp:
             fp.write(res.content().data())
-            layer = QgsVectorLayer(file_name, 'parent', 'ogr')
-
-            for sub_layer in layer.dataProvider().subLayers():
-                name = sub_layer.split(QgsDataProvider.SUBLAYER_SEPARATOR)[1]
-                uri = "%s|layername=%s" % (file_name, name,)
-                self.layers[name] = QgsVectorLayer(uri, name, 'ogr')
-
-        if self.target_dir is None:
-            os.remove(file_name)
 
     def run(self):
         try:
@@ -117,7 +108,6 @@ class GeopackageTask(QgsTask):
 
         except OrkamvApiException as e:
             self.error_reason = e.reason
-            print(f'{self.error_reason}')
             return False
 
     def get_results(self) -> Dict[str, QgsVectorLayer]:
