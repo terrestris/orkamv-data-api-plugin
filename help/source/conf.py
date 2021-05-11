@@ -178,7 +178,7 @@ htmlhelp_basename = 'TemplateClassdoc'
 # Grouping the document tree into LaTeX files. List of tuples
 # (source start file, target name, title, author, documentclass [howto/manual]).
 latex_documents = [
-  ('index', 'GeopackageDownloader.tex', u'GeopackageDownloader Documentation',
+  ('index', 'OrkamvDataApiPlugin.tex', u'OrkamvDataApiPlugin Documentation',
    u'terrestris GmbH & Co. KG', 'manual'),
 ]
 
@@ -211,6 +211,6 @@ latex_documents = [
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
 man_pages = [
-    ('index', 'TemplateClass', u'GeopackageDownloader Documentation',
+    ('index', 'TemplateClass', u'OrkamvDataApiPlugin Documentation',
      [u'terrestris GmbH & Co. KG'], 1)
 ]

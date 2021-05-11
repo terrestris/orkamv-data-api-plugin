@@ -22,7 +22,6 @@
  ***************************************************************************/
 """
 import tempfile
-from enum import Enum
 from typing import Optional, Dict, List
 
 from qgis.PyQt.QtCore import QSettings, QTranslator, QCoreApplication
@@ -33,6 +32,7 @@ from qgis.gui import QgisInterface, QgsFileWidget
 from qgis.core import Qgis, QgsProject, QgsApplication, \
     QgsCoordinateReferenceSystem, QgsVectorLayer
 
+from .types import TaskStatus, ErrorReason
 from .resources_task import ResourcesTask
 from .geopackage_task import GeopackageTask
 
@@ -41,12 +41,6 @@ from .resources import *
 # Import the code for the dialog
 from .orkamv_data_api_plugin_dialog import OrkamvDataApiPluginDialog
 import os.path
-
-
-class TaskStatus(Enum):
-    STARTED = 1
-    CANCELLED = 2
-    COMPLETED = 3
 
 
 class OrkamvDataApiPlugin:
@@ -91,7 +85,7 @@ class OrkamvDataApiPlugin:
 
         # Declare instance attributes
         self.actions = []
-        self.menu = self.tr(u'&Geopackage Downloader')
+        self.menu = self.tr(u'&ORKa.MV Data API')
 
         # Check if plugin was started the first time in current QGIS session
         # Must be set in initGui() to survive plugin reloads
@@ -110,7 +104,7 @@ class OrkamvDataApiPlugin:
         :rtype: QString
         """
         # noinspection PyTypeChecker,PyArgumentList,PyCallByClass
-        return QCoreApplication.translate('GeopackageDownloader', message)
+        return QCoreApplication.translate('OrkamvDataApiPlugin', message)
 
     def add_action(
             self,
@@ -192,7 +186,7 @@ class OrkamvDataApiPlugin:
         icon_path = ':/plugins/orkamv_data_api_plugin/icon.png'
         self.add_action(
             icon_path,
-            text=self.tr(u'Download geopackage'),
+            text=self.tr(u'ORKa.MV Data API'),
             callback=self.run,
             parent=self.iface.mainWindow())
 
@@ -227,7 +221,8 @@ class OrkamvDataApiPlugin:
             self.dlg.extent_widget.setOutputCrs(QgsCoordinateReferenceSystem("EPSG:4326"))
             self.dlg.extent_widget.setMapCanvas(self.iface.mapCanvas())
             self.dlg.extent_widget.extentChanged.connect(self.check_required_for_download)
-            # self.dlg.extent_widget.setOriginalExtent()
+            self.dlg.extent_widget.setNullValueAllowed(True, 'Please choose an extent')
+            self.dlg.extent_widget.clear()
 
             # setup file widget
             home = os.path.expanduser('~')
@@ -261,7 +256,8 @@ class OrkamvDataApiPlugin:
         folders = QgsApplication.instance().svgPaths()
 
         if len(folders) == 0:
-            self.dlg.svg_combo_box.addItem('WARNING: No SVG folder available! Please check your preferences.', None)
+            self.dlg.svg_combo_box.addItem(self.tr('WARNING: No SVG folder available! Please check your preferences.'),
+                                           None)
         else:
             for folder in folders:
                 self.dlg.svg_combo_box.addItem(folder, folder)
@@ -271,8 +267,8 @@ class OrkamvDataApiPlugin:
         if self.dlg.persistance_path_widget.filePath() != '' and \
                 any(os.scandir(self.dlg.persistance_path_widget.filePath())):
             dialog = QMessageBox()
-            dialog.setText('The directory is not empty')
-            dialog.setInformativeText('Do you want to overwrite the content?')
+            dialog.setText(self.tr('The directory is not empty'))
+            dialog.setInformativeText(self.tr('Do you want to overwrite the content?'))
             dialog.setStandardButtons(QMessageBox.Yes | QMessageBox.No)
             dialog.setDefaultButton(QMessageBox.No)
             result = dialog.exec_()
@@ -287,10 +283,11 @@ class OrkamvDataApiPlugin:
 
     def check_required_for_download(self):
         path = self.dlg.persistance_path_widget.filePath()
+        path_valid = self.dlg.persistance_radio_temporary.isChecked() or \
+                     (path is not None and path != '')
         check = self.dlg.extent_widget.isValid() \
                 and self.dlg.svg_combo_box.currentData() is not None \
-                and path is not None \
-                and path != ''
+                and path_valid
         self.dlg.download_start_button.setEnabled(check)
 
     def start_download(self):
@@ -325,20 +322,17 @@ class OrkamvDataApiPlugin:
         self.geopackage_task_status = TaskStatus.CANCELLED
         if self.resources_task_status == TaskStatus.STARTED:
             self.resources_task.cancel()
+            self.show_message(self.geopackage_task.error_reason)
         else:
-            self.download_terminated()
+            self.reset()
 
     def resources_terminated(self):
         self.resources_task_status = TaskStatus.CANCELLED
         if self.geopackage_task_status == TaskStatus.STARTED:
             self.geopackage_task.cancel()
+            self.show_message(self.resources_task.error_reason)
         else:
-            self.download_terminated()
-
-    def download_terminated(self):
-        self.iface.messageBar().pushMessage('Could not start download job. Please try again in a few minutes',
-                                            level=Qgis.Warning)
-        self.reset()
+            self.reset()
 
     def geopackage_completed(self):
         self.geopackage_task_status = TaskStatus.COMPLETED
@@ -385,3 +379,23 @@ class OrkamvDataApiPlugin:
     def reset(self):
         self.dlg.download_progress_bar.setValue(0)
         self.check_required_for_download()
+
+    def show_message(self, reason: ErrorReason, message: str):
+        message: str
+        level: Qgis.MessageLevel = Qgis.Warning
+
+        if reason == 'ERROR':
+            message = self.tr('An error occured. Please try again layer and contact an ' +
+                              'administrator if the error still occurs.')
+            level = Qgis.Critical
+        elif reason == 'TIMEOUT':
+            message = self.tr('The processing timed out. Please try again with a smaller area.')
+        elif reason == 'BOX_TOO_BIG':
+            message = self.tr('The chosen bounding box is too big.')
+        elif reason == 'NO_THREADS_AVAILABLE':
+            message = self.tr('Current job limit is reached. Please try again in a few minutes.')
+        else:
+            message = self.tr('Unknown message type: {}: {}').format(reason, message)
+            level: Qgis.Critical
+
+        self.iface.messageBar().pushMessage(message, level=level)

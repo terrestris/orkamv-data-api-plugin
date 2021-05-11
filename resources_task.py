@@ -19,7 +19,7 @@ class ResourcesTask(QgsTask):
         self.base_url = base_url[:-1] if base_url.endswith('/') else base_url
         self.target_dir = target_dir
         self.svg_dir = svg_dir
-        super().__init__('Download Resources Job', QgsTask.CanCancel)  # TODO: better description
+        super().__init__('ORKa.MV Data API Resources Job', QgsTask.CanCancel)
 
     def run(self):
         try:

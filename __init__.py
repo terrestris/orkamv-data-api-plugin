@@ -26,7 +26,7 @@
 
 # noinspection PyPep8Naming
 def classFactory(iface):  # pylint: disable=invalid-name
-    """Load OrkamvDataApiPlugin class from file GeopackageDownloader.
+    """Load OrkamvDataApiPlugin class from file orkamv_data_api_plugin.py
 
     :param iface: A QGIS interface instance.
     :type iface: QgsInterface
