@@ -15,7 +15,7 @@
     <message>
         <location filename="../orkamv_data_api_plugin.py" line="259"/>
         <source>WARNING: No SVG folder available! Please check your preferences.</source>
-        <translation>WARNUNG: Kein SVG Verzeichnus verfügbar! Bitte überprüfen Sie ihre Einstellungen.</translation>
+        <translation>WARNUNG: Kein SVG Verzeichnis verfügbar! Bitte überprüfen Sie Ihre Einstellungen.</translation>
     </message>
     <message>
         <location filename="../orkamv_data_api_plugin.py" line="270"/>
@@ -30,12 +30,12 @@
     <message>
         <location filename="../orkamv_data_api_plugin.py" line="388"/>
         <source>An error occured. Please try again layer and contact an administrator if the error still occurs.</source>
-        <translation>Ein Fehler ist aufgetreten. Bitte versuchen Sie es später noch einmal und kontaktieren Sie den Administrator, wenn der Fehler immer noch auftritt.</translation>
+        <translation>Ein Fehler ist aufgetreten. Bitte versuchen Sie es später noch einmal und kontaktieren Sie den Administrator, falls der Fehler weiterhin auftritt.</translation>
     </message>
     <message>
         <location filename="../orkamv_data_api_plugin.py" line="392"/>
         <source>The processing timed out. Please try again with a smaller area.</source>
-        <translation>Eine Zeitüberschreitung beim Prozessieren ist eufgetreten. Bitte versuchen Sie es mit einem kleineren Gebiet noch einmal.</translation>
+        <translation>Eine Zeitüberschreitung beim Prozessieren ist aufgetreten. Bitte versuchen Sie es mit einem kleineren Gebiet noch einmal.</translation>
     </message>
     <message>
         <location filename="../orkamv_data_api_plugin.py" line="394"/>
@@ -45,7 +45,7 @@
     <message>
         <location filename="../orkamv_data_api_plugin.py" line="396"/>
         <source>Current job limit is reached. Please try again in a few minutes.</source>
-        <translation>Das Job Limit ist erreicht. Bitte versuchen Sie es in ein paar Minuten noch einmal.</translation>
+        <translation>Das Job Limit wurde erreicht. Bitte versuchen Sie es in wenigen Minuten noch einmal.</translation>
     </message>
     <message>
         <location filename="../orkamv_data_api_plugin.py" line="398"/>
@@ -78,7 +78,7 @@
     <message>
         <location filename="../orkamv_data_api_plugin_dialog_base.ui" line="73"/>
         <source>The icons needed for display are integrated into the chosen SVG directory.</source>
-        <translation>Die für die Darstellung benötigten Icons werden in das angegebene SVGVerzeichnis integriert.</translation>
+        <translation>Die für die Darstellung benötigten Icons werden in das angegebene SVG Verzeichnis integriert.</translation>
     </message>
     <message>
         <location filename="../orkamv_data_api_plugin_dialog_base.ui" line="80"/>

@@ -12,8 +12,8 @@ email=info@terrestris.de
 
 about=Provide a brief description of the plugin and its purpose.
 
-tracker=http://bugs
-repository=http://repo
+tracker=https://github.com/terrestris/orkamv-data-api-plugin/issues
+repository=https://github.com/terrestris/orkamv-data-api-plugin
 # End of mandatory metadata
 
 # Recommended items:
@@ -25,11 +25,11 @@ hasProcessingProvider=no
 # Tags are comma separated with spaces allowed
 tags=python
 
-homepage=http://homepage
+homepage=https://github.com/terrestris/orkamv-data-api-plugin
 category=Vector
 icon=icon.png
 # experimental flag
-experimental=True
+experimental=False
 
 # deprecated flag (applies to the whole plugin, not just a single version)
 deprecated=False
@@ -44,4 +44,3 @@ Category of the plugin: Raster, Vector, Database or Web
 
 # If the plugin can run on QGIS Server.
 server=False
-
