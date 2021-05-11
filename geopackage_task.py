@@ -7,7 +7,7 @@ from PyQt5.QtCore import QUrl
 from PyQt5.QtNetwork import QNetworkRequest
 from qgis._core import QgsNetworkAccessManager, QgsTask, QgsVectorLayer, QgsDataProvider, QgsRectangle
 
-from .types import ErrorReason, JobException
+from .types import ErrorReason, OrkamvApiException
 
 
 class GeopackageTask(QgsTask):
@@ -39,8 +39,8 @@ class GeopackageTask(QgsTask):
 
         res_data = json.loads(res.content().data().decode('utf8'))
 
-        if not res_data['success']:
-            raise JobException(res_data.get('status') or ErrorReason.ERROR, res_data.get('message'))
+        if not res_data.get('success'):
+            self.handle_api_error(res_data)
 
         self.job_id = res_data['job_id']
 
@@ -53,13 +53,21 @@ class GeopackageTask(QgsTask):
         res = QgsNetworkAccessManager.blockingGet(req, forceRefresh=True)
         res_data = json.loads(res.content().data().decode('utf8'))
 
-        if res_data['status'] == 'CREATED':
+        if res_data.get('status') == 'CREATED':
             self.data_id = res_data['data_id']
             return True
-        elif res_data['status'] == 'RUNNING':
+        elif res_data.get('status') == 'RUNNING':
             return False
         else:
-            raise JobException(res_data.get('status') or ErrorReason.ERROR, res_data.get('message'))
+            self.handle_api_error(res_data)
+
+    def handle_api_error(self, res_data: Dict):
+        print(f'Status: {res_data.get("status")}, Message:{res_data.get("message")}')
+        if 'message' in res_data:
+            raise OrkamvApiException(ErrorReason(res_data['message']))
+        if 'status' in res_data:
+            raise OrkamvApiException(ErrorReason(res_data['status']))
+        raise OrkamvApiException(ErrorReason.ERROR)
 
     def download_file(self):
         req = QNetworkRequest()
@@ -107,8 +115,9 @@ class GeopackageTask(QgsTask):
             self.setProgress(100)
             return True
 
-        except JobException as e:
+        except OrkamvApiException as e:
             self.error_reason = e.reason
+            print(f'{self.error_reason}')
             return False
 
     def get_results(self) -> Dict[str, QgsVectorLayer]:

@@ -51,8 +51,8 @@ class OrkamvDataApiPlugin:
 
     geopackage_task: Optional[GeopackageTask] = None
     resources_task: Optional[ResourcesTask] = None
-    geopackage_task_status: TaskStatus
-    resources_task_status: TaskStatus
+    geopackage_task_status: TaskStatus = TaskStatus.COMPLETED
+    resources_task_status: TaskStatus = TaskStatus.COMPLETED
 
     result_layers: Dict[str, QgsVectorLayer]
     result_layer_order: List[str]
@@ -284,10 +284,11 @@ class OrkamvDataApiPlugin:
     def check_required_for_download(self):
         path = self.dlg.persistance_path_widget.filePath()
         path_valid = self.dlg.persistance_radio_temporary.isChecked() or \
-                     (path is not None and path != '')
+            (path is not None and path != '')
         check = self.dlg.extent_widget.isValid() \
-                and self.dlg.svg_combo_box.currentData() is not None \
-                and path_valid
+            and self.geopackage_task_status != TaskStatus.STARTED \
+            and self.dlg.svg_combo_box.currentData() is not None \
+            and path_valid
         self.dlg.download_start_button.setEnabled(check)
 
     def start_download(self):
@@ -309,13 +310,14 @@ class OrkamvDataApiPlugin:
         self.geopackage_task.taskCompleted.connect(self.geopackage_completed)
         self.geopackage_task.taskTerminated.connect(self.geopackage_terminated)
         self.geopackage_task_status = TaskStatus.STARTED
-        QgsApplication.taskManager().addTask(self.geopackage_task)
 
         self.resources_task = ResourcesTask(url, target_dir, svg_dir)
         self.resources_task.progressChanged.connect(self.update_progress)
         self.resources_task.taskCompleted.connect(self.resources_completed)
         self.resources_task.taskTerminated.connect(self.resources_terminated)
         self.resources_task_status = TaskStatus.STARTED
+
+        QgsApplication.taskManager().addTask(self.geopackage_task)
         QgsApplication.taskManager().addTask(self.resources_task)
 
     def geopackage_terminated(self):
@@ -380,22 +382,22 @@ class OrkamvDataApiPlugin:
         self.dlg.download_progress_bar.setValue(0)
         self.check_required_for_download()
 
-    def show_message(self, reason: ErrorReason, message: str):
+    def show_message(self, reason: ErrorReason, message: Optional[str] = None):
         message: str
         level: Qgis.MessageLevel = Qgis.Warning
 
-        if reason == 'ERROR':
+        if reason == ErrorReason.ERROR:
             message = self.tr('An error occured. Please try again layer and contact an ' +
                               'administrator if the error still occurs.')
             level = Qgis.Critical
-        elif reason == 'TIMEOUT':
+        elif reason == ErrorReason.TIMEOUT:
             message = self.tr('The processing timed out. Please try again with a smaller area.')
-        elif reason == 'BOX_TOO_BIG':
+        elif reason == ErrorReason.BBOX_TOO_BIG:
             message = self.tr('The chosen bounding box is too big.')
-        elif reason == 'NO_THREADS_AVAILABLE':
+        elif reason == ErrorReason.NO_THREADS_AVAILABLE:
             message = self.tr('Current job limit is reached. Please try again in a few minutes.')
         else:
-            message = self.tr('Unknown message type: {}: {}').format(reason, message)
+            message = self.tr('Unknown message type: {}: {}').format(str(reason), message)
             level: Qgis.Critical
 
         self.iface.messageBar().pushMessage(message, level=level)

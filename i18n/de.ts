@@ -30,7 +30,7 @@
     <message>
         <location filename="../orkamv_data_api_plugin.py" line="388"/>
         <source>An error occured. Please try again layer and contact an administrator if the error still occurs.</source>
-        <translation>Ein Fehler ist aufgetreten. Bitte versuchen Sie es später noch einmal und kontaktieren Sie den Adminsitrator, wenn der Fehler immer noch auftritt.</translation>
+        <translation>Ein Fehler ist aufgetreten. Bitte versuchen Sie es später noch einmal und kontaktieren Sie den Administrator, wenn der Fehler immer noch auftritt.</translation>
     </message>
     <message>
         <location filename="../orkamv_data_api_plugin.py" line="392"/>

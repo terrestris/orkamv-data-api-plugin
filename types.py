@@ -6,7 +6,7 @@ class ErrorReason(Enum):
     ERROR = 'ERROR'
     TIMEOUT = 'TIMEOUT'
     BBOX_TOO_BIG = 'BBOX_TOO_BIG'
-    BOX_INVALID = 'BOX_INVALID'
+    BBOX_INVALID = 'BBOX_INVALID'
     NO_THREADS_AVAILABLE = 'NO_THREADS_AVAILABLE'
 
 
@@ -16,7 +16,7 @@ class TaskStatus(Enum):
     COMPLETED = 3
 
 
-class JobException(Exception):
-    def __init__(self, reason: ErrorReason, message: Optional[str]):
+class OrkamvApiException(Exception):
+    def __init__(self, reason: ErrorReason):
         self.reason = reason
-        super().__init__(self, reason if message is None else message)
+        super().__init__(self, str(reason))
