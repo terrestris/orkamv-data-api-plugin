@@ -1,4 +1,4 @@
-This plugin loads geopackage files from the ORKA.MV DATA API.
+This plugin loads geopackage files from the ORKa.MV Data API.
 
 Installation
 ============
