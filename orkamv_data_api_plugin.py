@@ -287,7 +287,7 @@ class OrkamvDataApiPlugin:
             and self.dlg.svg_combo_box.currentData() is not None \
             and path_valid \
             and self.dlg.server_url_edit.text()
-        self.dlg.download_start_button.setEnabled(check)
+        self.dlg.download_start_button.setEnabled(bool(check))
 
     def start_download(self):
         self.dlg.download_start_button.setEnabled(False)
