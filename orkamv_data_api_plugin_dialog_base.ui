@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>508</width>
-    <height>269</height>
+    <width>443</width>
+    <height>231</height>
    </rect>
   </property>
   <property name="font">
@@ -18,180 +18,160 @@
   <property name="windowTitle">
    <string>ORKa.MV Data API</string>
   </property>
-  <widget class="QWidget" name="formLayoutWidget">
-   <property name="geometry">
-    <rect>
-     <x>10</x>
-     <y>40</y>
-     <width>491</width>
-     <height>181</height>
-    </rect>
-   </property>
-   <layout class="QFormLayout" name="form_layout">
-    <item row="0" column="0">
-     <widget class="QLabel" name="server_url_label">
-      <property name="text">
-       <string>Server URL:</string>
-      </property>
-     </widget>
-    </item>
-    <item row="0" column="1">
-     <widget class="QLineEdit" name="server_url_edit">
-      <property name="text">
-       <string/>
-      </property>
-     </widget>
-    </item>
-    <item row="1" column="0">
-     <widget class="QLabel" name="extent_selection_label">
-      <property name="text">
-       <string>Map extent:</string>
-      </property>
-     </widget>
-    </item>
-    <item row="1" column="1">
-     <widget class="QgsExtentWidget" name="extent_widget" native="true"/>
-    </item>
-    <item row="2" column="0">
-     <widget class="QLabel" name="svg_label">
-      <property name="text">
-       <string>SVG folder:</string>
-      </property>
-     </widget>
-    </item>
-    <item row="2" column="1">
-     <widget class="QComboBox" name="svg_combo_box"/>
-    </item>
-    <item row="3" column="1">
-     <widget class="QLabel" name="svg_help">
-      <property name="font">
-       <font>
-        <pointsize>7</pointsize>
-       </font>
-      </property>
-      <property name="text">
-       <string>The icons needed for display are integrated into the chosen SVG directory.</string>
-      </property>
-     </widget>
-    </item>
-    <item row="4" column="0">
-     <widget class="QLabel" name="persistance_label">
-      <property name="text">
-       <string>Saving:</string>
-      </property>
-     </widget>
-    </item>
-    <item row="4" column="1">
-     <layout class="QHBoxLayout" name="persistance_layout">
-      <item>
-       <widget class="QRadioButton" name="persistance_radio_temporary">
-        <property name="text">
-         <string>Temporary</string>
-        </property>
-        <property name="checked">
-         <bool>true</bool>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QRadioButton" name="persistance_radio_todir">
-        <property name="text">
-         <string>Directory</string>
-        </property>
-       </widget>
-      </item>
-     </layout>
-    </item>
-    <item row="5" column="0">
-     <widget class="QLabel" name="persistance_path_label">
-      <property name="text">
-       <string>Target directory:</string>
-      </property>
-     </widget>
-    </item>
-    <item row="5" column="1">
-     <widget class="QgsFileWidget" name="persistance_path_widget" native="true">
-      <property name="enabled">
-       <bool>false</bool>
-      </property>
-     </widget>
-    </item>
-    <item row="6" column="1">
-     <widget class="QLabel" name="path_help">
-      <property name="font">
-       <font>
-        <pointsize>7</pointsize>
-       </font>
-      </property>
-      <property name="text">
-       <string>All needed files will be stored in the target directory.</string>
-      </property>
-     </widget>
-    </item>
-   </layout>
-  </widget>
-  <widget class="QLabel" name="title_label">
-   <property name="geometry">
-    <rect>
-     <x>20</x>
-     <y>10</y>
-     <width>361</width>
-     <height>21</height>
-    </rect>
-   </property>
-   <property name="font">
-    <font>
-     <pointsize>14</pointsize>
-    </font>
-   </property>
-   <property name="text">
-    <string>ORKa.MV Data API</string>
-   </property>
-   <property name="alignment">
-    <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
-   </property>
-  </widget>
-  <widget class="QWidget" name="horizontalLayoutWidget">
-   <property name="geometry">
-    <rect>
-     <x>10</x>
-     <y>230</y>
-     <width>491</width>
-     <height>31</height>
-    </rect>
-   </property>
-   <layout class="QHBoxLayout" name="horizontalLayout">
-    <item>
-     <widget class="QProgressBar" name="download_progress_bar">
-      <property name="enabled">
-       <bool>true</bool>
-      </property>
-      <property name="maximum">
-       <number>100</number>
-      </property>
-      <property name="value">
-       <number>0</number>
-      </property>
-      <property name="textVisible">
-       <bool>true</bool>
-      </property>
-      <property name="invertedAppearance">
-       <bool>false</bool>
-      </property>
-     </widget>
-    </item>
-    <item>
-     <widget class="QPushButton" name="download_start_button">
-      <property name="enabled">
-       <bool>false</bool>
-      </property>
-      <property name="text">
-       <string>Start</string>
-      </property>
-     </widget>
-    </item>
-   </layout>
-  </widget>
+  <layout class="QVBoxLayout" name="verticalLayout">
+   <item>
+    <widget class="QLabel" name="title_label">
+     <property name="font">
+      <font>
+       <pointsize>14</pointsize>
+      </font>
+     </property>
+     <property name="text">
+      <string>ORKa.MV Data API</string>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <layout class="QFormLayout" name="form_layout">
+     <item row="0" column="0">
+      <widget class="QLabel" name="server_url_label">
+       <property name="text">
+        <string>Server URL:</string>
+       </property>
+      </widget>
+     </item>
+     <item row="0" column="1">
+      <widget class="QLineEdit" name="server_url_edit">
+       <property name="text">
+        <string/>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="0">
+      <widget class="QLabel" name="extent_selection_label">
+       <property name="text">
+        <string>Map extent:</string>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="1">
+      <widget class="QgsExtentWidget" name="extent_widget" native="true"/>
+     </item>
+     <item row="2" column="0">
+      <widget class="QLabel" name="svg_label">
+       <property name="text">
+        <string>SVG folder:</string>
+       </property>
+      </widget>
+     </item>
+     <item row="2" column="1">
+      <widget class="QComboBox" name="svg_combo_box"/>
+     </item>
+     <item row="3" column="1">
+      <widget class="QLabel" name="svg_help">
+       <property name="font">
+        <font>
+         <pointsize>7</pointsize>
+        </font>
+       </property>
+       <property name="text">
+        <string>The icons needed for display are integrated into the chosen SVG directory.</string>
+       </property>
+      </widget>
+     </item>
+     <item row="4" column="0">
+      <widget class="QLabel" name="persistance_label">
+       <property name="text">
+        <string>Saving:</string>
+       </property>
+      </widget>
+     </item>
+     <item row="4" column="1">
+      <layout class="QHBoxLayout" name="persistance_layout">
+       <item>
+        <widget class="QRadioButton" name="persistance_radio_temporary">
+         <property name="text">
+          <string>Temporary</string>
+         </property>
+         <property name="checked">
+          <bool>true</bool>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QRadioButton" name="persistance_radio_todir">
+         <property name="text">
+          <string>Directory</string>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </item>
+     <item row="5" column="0">
+      <widget class="QLabel" name="persistance_path_label">
+       <property name="text">
+        <string>Target directory:</string>
+       </property>
+      </widget>
+     </item>
+     <item row="5" column="1">
+      <widget class="QgsFileWidget" name="persistance_path_widget" native="true">
+       <property name="enabled">
+        <bool>false</bool>
+       </property>
+      </widget>
+     </item>
+     <item row="6" column="1">
+      <widget class="QLabel" name="path_help">
+       <property name="font">
+        <font>
+         <pointsize>7</pointsize>
+        </font>
+       </property>
+       <property name="text">
+        <string>All needed files will be stored in the target directory.</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+   <item>
+    <layout class="QHBoxLayout" name="horizontalLayout">
+     <item>
+      <widget class="QProgressBar" name="download_progress_bar">
+       <property name="enabled">
+        <bool>true</bool>
+       </property>
+       <property name="maximum">
+        <number>100</number>
+       </property>
+       <property name="value">
+        <number>0</number>
+       </property>
+       <property name="textVisible">
+        <bool>true</bool>
+       </property>
+       <property name="invertedAppearance">
+        <bool>false</bool>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="download_start_button">
+       <property name="enabled">
+        <bool>false</bool>
+       </property>
+       <property name="text">
+        <string>Start</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+  </layout>
  </widget>
  <customwidgets>
   <customwidget>
