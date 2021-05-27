@@ -177,7 +177,7 @@
   <customwidget>
    <class>QgsExtentWidget</class>
    <extends>QWidget</extends>
-   <header>/usr/include/qgis/qgsextentwidget.h</header>
+   <header>qgsextentwidget.h</header>
    <container>1</container>
   </customwidget>
   <customwidget>
