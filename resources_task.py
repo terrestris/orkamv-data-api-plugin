@@ -58,7 +58,8 @@ class ResourcesTask(QgsTask):
 
         self.setProgress(50)
 
-        _, tmp_file_name = tempfile.mkstemp(suffix='.zip')
+        fd, tmp_file_name = tempfile.mkstemp(suffix='.zip')
+        os.close(fd)
 
         with open(tmp_file_name, 'w+b') as fp:
             fp.write(res.content().data())
