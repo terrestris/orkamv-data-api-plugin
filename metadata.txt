@@ -6,7 +6,7 @@
 name=ORKa.MV Data API
 qgisMinimumVersion=3.0
 description=This plugin loads geopackage files from the ORKa.MV Data API |  Dieses Plugin lädt geopackages von der ORKa.MV Data API
-version=0.3
+version=0.4
 author=terrestris GmbH & Co. KG
 email=info@terrestris.de
 
