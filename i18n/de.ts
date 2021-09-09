@@ -13,52 +13,52 @@
         <translation>ORKa.MV Data API</translation>
     </message>
     <message>
-        <location filename="../orkamv_data_api_plugin.py" line="262"/>
+        <location filename="../orkamv_data_api_plugin.py" line="263"/>
         <source>WARNING: No SVG folder available! Please check your preferences.</source>
         <translation>WARNUNG: Kein SVG Verzeichnis verfügbar! Bitte überprüfen Sie Ihre Einstellungen.</translation>
     </message>
     <message>
-        <location filename="../orkamv_data_api_plugin.py" line="273"/>
+        <location filename="../orkamv_data_api_plugin.py" line="274"/>
         <source>The directory is not empty</source>
         <translation>Das Verzeichnis ist nicht leer</translation>
     </message>
     <message>
-        <location filename="../orkamv_data_api_plugin.py" line="274"/>
+        <location filename="../orkamv_data_api_plugin.py" line="275"/>
         <source>Do you want to overwrite the content?</source>
         <translation>Möchten Sie den Inhalt überschreiben?</translation>
     </message>
     <message>
-        <location filename="../orkamv_data_api_plugin.py" line="404"/>
-        <source>An error occured. Please try again layer and contact an administrator if the error still occurs.</source>
+        <location filename="../orkamv_data_api_plugin.py" line="402"/>
+        <source>An error occured. Please try again later and contact an administrator if the error still occurs.</source>
         <translation>Ein Fehler ist aufgetreten. Bitte versuchen Sie es später noch einmal und kontaktieren Sie den Administrator, falls der Fehler weiterhin auftritt.</translation>
     </message>
     <message>
-        <location filename="../orkamv_data_api_plugin.py" line="408"/>
+        <location filename="../orkamv_data_api_plugin.py" line="406"/>
         <source>The processing timed out. Please try again with a smaller area.</source>
         <translation>Eine Zeitüberschreitung beim Prozessieren ist aufgetreten. Bitte versuchen Sie es mit einem kleineren Gebiet noch einmal.</translation>
     </message>
     <message>
-        <location filename="../orkamv_data_api_plugin.py" line="410"/>
+        <location filename="../orkamv_data_api_plugin.py" line="408"/>
         <source>The chosen bounding box is too big.</source>
         <translation>Der gewählte Kartenausschnitt ist zu groß.</translation>
     </message>
     <message>
-        <location filename="../orkamv_data_api_plugin.py" line="412"/>
+        <location filename="../orkamv_data_api_plugin.py" line="410"/>
         <source>Current job limit is reached. Please try again in a few minutes.</source>
         <translation>Das Job Limit wurde erreicht. Bitte versuchen Sie es in wenigen Minuten noch einmal.</translation>
     </message>
     <message>
-        <location filename="../orkamv_data_api_plugin.py" line="416"/>
+        <location filename="../orkamv_data_api_plugin.py" line="414"/>
         <source>Unknown message type: {}: {}</source>
         <translation>Unbekannter Nachrichtentyp: {}: {}</translation>
     </message>
     <message>
-        <location filename="../orkamv_data_api_plugin.py" line="222"/>
+        <location filename="../orkamv_data_api_plugin.py" line="224"/>
         <source>Please choose an extent</source>
         <translation>Bitte wählen Sie einen Kartenausschnitt</translation>
     </message>
     <message>
-        <location filename="../orkamv_data_api_plugin.py" line="414"/>
+        <location filename="../orkamv_data_api_plugin.py" line="412"/>
         <source>Network error: {}</source>
         <translation>Netzwerk Fehler: {}</translation>
     </message>
