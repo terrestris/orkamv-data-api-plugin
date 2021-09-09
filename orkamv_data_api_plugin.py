@@ -213,7 +213,9 @@ class OrkamvDataApiPlugin:
             # connect handlers
             self.dlg.download_start_button.clicked.connect(self.start_download)
             self.dlg.persistance_radio_temporary.toggled.connect(self.toggle_persistance_mode)
+            self.dlg.persistance_radio_todir.toggled.connect(self.check_required_for_download)
             self.dlg.svg_combo_box.currentIndexChanged.connect(self.check_required_for_download)
+            self.dlg.server_url_edit.textChanged.connect(self.check_required_for_download)
 
             # setup extent widget
             self.dlg.extent_widget.setOutputCrs(QgsCoordinateReferenceSystem("EPSG:4326"))
@@ -229,15 +231,14 @@ class OrkamvDataApiPlugin:
             self.dlg.persistance_path_widget.fileChanged.connect(self.check_dir)
             self.dlg.persistance_path_widget.fileChanged.connect(self.check_required_for_download)
             self.dlg.persistance_path_widget.lineEdit().setEnabled(False)
-
-            # restore server url
-            s = QgsSettings()
-            server_url = s.value('orka_mv_data_api_plugin/server_url', '')
-            self.dlg.server_url_edit.setText(server_url)
-
-            self.check_required_for_download()
         else:
             self.reset()
+
+        s = QgsSettings()
+        server_url = s.value('orka_mv_data_api_plugin/server_url', '')
+        self.dlg.server_url_edit.setText(server_url)
+
+        self.check_required_for_download()
 
         self.read_svg_dirs()
 
@@ -283,6 +284,7 @@ class OrkamvDataApiPlugin:
             self.dlg.persistance_path_widget.setEnabled(True)
         else:
             self.dlg.persistance_path_widget.setEnabled(False)
+        self.check_required_for_download()
 
     def check_required_for_download(self):
         path_valid = self.dlg.persistance_radio_temporary.isChecked() or \
@@ -401,7 +403,7 @@ class OrkamvDataApiPlugin:
         level: Qgis.MessageLevel = Qgis.Warning
 
         if reason == ErrorReason.ERROR:
-            message = self.tr('An error occured. Please try again layer and contact an ' +
+            message = self.tr('An error occurred. Please try again later and contact an ' +
                               'administrator if the error still occurs.')
             level = Qgis.Critical
         elif reason == ErrorReason.TIMEOUT:
