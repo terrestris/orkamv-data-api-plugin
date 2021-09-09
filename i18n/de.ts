@@ -66,57 +66,57 @@
 <context>
     <name>OrkamvDataApiPluginDialogBase</name>
     <message>
-        <location filename="../zip_build/OrkamvDataApiPlugin/orkamv_data_api_plugin_dialog_base.ui" line="30"/>
+        <location filename="../orkamv_data_api_plugin_dialog_base.ui" line="30"/>
         <source>ORKa.MV Data API</source>
         <translation>ORKa.MV Data API</translation>
     </message>
     <message>
-        <location filename="../zip_build/OrkamvDataApiPlugin/orkamv_data_api_plugin_dialog_base.ui" line="42"/>
+        <location filename="../orkamv_data_api_plugin_dialog_base.ui" line="42"/>
         <source>Server URL:</source>
         <translation>Server URL:</translation>
     </message>
     <message>
-        <location filename="../zip_build/OrkamvDataApiPlugin/orkamv_data_api_plugin_dialog_base.ui" line="56"/>
+        <location filename="../orkamv_data_api_plugin_dialog_base.ui" line="56"/>
         <source>Map extent:</source>
         <translation>Kartenausschnitt:</translation>
     </message>
     <message>
-        <location filename="../zip_build/OrkamvDataApiPlugin/orkamv_data_api_plugin_dialog_base.ui" line="66"/>
+        <location filename="../orkamv_data_api_plugin_dialog_base.ui" line="66"/>
         <source>SVG folder:</source>
         <translation>SVG Verzeichnis:</translation>
     </message>
     <message>
-        <location filename="../zip_build/OrkamvDataApiPlugin/orkamv_data_api_plugin_dialog_base.ui" line="81"/>
+        <location filename="../orkamv_data_api_plugin_dialog_base.ui" line="81"/>
         <source>The icons needed for display are integrated into the chosen SVG directory.</source>
         <translation>Die für die Darstellung benötigten Icons werden in das angegebene SVG Verzeichnis integriert.</translation>
     </message>
     <message>
-        <location filename="../zip_build/OrkamvDataApiPlugin/orkamv_data_api_plugin_dialog_base.ui" line="88"/>
+        <location filename="../orkamv_data_api_plugin_dialog_base.ui" line="88"/>
         <source>Saving:</source>
         <translation>Speicherung:</translation>
     </message>
     <message>
-        <location filename="../zip_build/OrkamvDataApiPlugin/orkamv_data_api_plugin_dialog_base.ui" line="97"/>
+        <location filename="../orkamv_data_api_plugin_dialog_base.ui" line="97"/>
         <source>Temporary</source>
         <translation>Temporär</translation>
     </message>
     <message>
-        <location filename="../zip_build/OrkamvDataApiPlugin/orkamv_data_api_plugin_dialog_base.ui" line="107"/>
+        <location filename="../orkamv_data_api_plugin_dialog_base.ui" line="107"/>
         <source>Directory</source>
         <translation>Verzeichnis</translation>
     </message>
     <message>
-        <location filename="../zip_build/OrkamvDataApiPlugin/orkamv_data_api_plugin_dialog_base.ui" line="116"/>
+        <location filename="../orkamv_data_api_plugin_dialog_base.ui" line="116"/>
         <source>Target directory:</source>
         <translation>Zielverzeichnis:</translation>
     </message>
     <message>
-        <location filename="../zip_build/OrkamvDataApiPlugin/orkamv_data_api_plugin_dialog_base.ui" line="135"/>
+        <location filename="../orkamv_data_api_plugin_dialog_base.ui" line="135"/>
         <source>All needed files will be stored in the target directory.</source>
         <translation>Im Zielverzeichnis werden alle benötigten Daten abgelegt.</translation>
     </message>
     <message>
-        <location filename="../zip_build/OrkamvDataApiPlugin/orkamv_data_api_plugin_dialog_base.ui" line="168"/>
+        <location filename="../orkamv_data_api_plugin_dialog_base.ui" line="168"/>
         <source>Start</source>
         <translation>Start</translation>
     </message>
