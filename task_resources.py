@@ -30,7 +30,7 @@ import zipfile
 from typing import Dict, List, Tuple, Optional
 
 from PyQt5.QtCore import QUrl
-from PyQt5.QtNetwork import QNetworkRequest
+from PyQt5.QtNetwork import QNetworkRequest, QNetworkReply
 from qgis._core import QgsTask, QgsNetworkAccessManager
 
 from .types import ErrorReason
@@ -40,6 +40,7 @@ class ResourcesTask(QgsTask):
     style_files: Dict[str, str] = {}
     layer_order: List[str]
     error_reason: Optional[ErrorReason] = None
+    error_message: Optional[str] = None
 
     def __init__(self, base_url: str, target_dir: str, svg_dir: str):
         self.base_url = base_url[:-1] if base_url.endswith('/') else base_url
@@ -52,6 +53,11 @@ class ResourcesTask(QgsTask):
         req.setUrl(QUrl(f'{self.base_url}/data/styles'))
 
         res = QgsNetworkAccessManager.blockingGet(req, forceRefresh=True)
+
+        if res.error() != QNetworkReply.NoError:
+            self.error_reason = ErrorReason.NETWORK_ERROR
+            self.error_message = res.errorString()
+            return False
 
         if self.isCanceled():
             return False

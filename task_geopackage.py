@@ -28,7 +28,7 @@ from time import sleep
 from typing import Dict, Optional
 
 from PyQt5.QtCore import QUrl
-from PyQt5.QtNetwork import QNetworkRequest
+from PyQt5.QtNetwork import QNetworkRequest, QNetworkReply
 from qgis._core import QgsNetworkAccessManager, QgsTask, QgsVectorLayer, QgsDataProvider, QgsRectangle
 
 from .types import ErrorReason, OrkamvApiException
@@ -40,6 +40,7 @@ class GeopackageTask(QgsTask):
     data_id: str
     file_name: str
     error_reason: Optional[ErrorReason] = None
+    error_message: Optional[str] = None
 
     def __init__(self, base_url: str, target_dir: str, extent: QgsRectangle):
         self.base_url = base_url[:-1] if base_url.endswith('/') else base_url
@@ -61,6 +62,9 @@ class GeopackageTask(QgsTask):
 
         res = QgsNetworkAccessManager.blockingPost(req, data=req_data, forceRefresh=True)
 
+        if res.error() != QNetworkReply.NoError:
+            raise OrkamvApiException(ErrorReason.NETWORK_ERROR, res.errorString())
+
         res_data = json.loads(res.content().data().decode('utf8'))
 
         if not res_data.get('success'):
@@ -68,13 +72,15 @@ class GeopackageTask(QgsTask):
 
         self.job_id = res_data['job_id']
 
-        return True
-
     def get_job_status(self) -> bool:
         req = QNetworkRequest()
         req.setUrl(QUrl(f'{self.base_url}/jobs/{self.job_id}'))
 
         res = QgsNetworkAccessManager.blockingGet(req, forceRefresh=True)
+
+        if res.error() != QNetworkReply.NoError:
+            raise OrkamvApiException(ErrorReason.NETWORK_ERROR, res.errorString())
+
         res_data = json.loads(res.content().data().decode('utf8'))
 
         if res_data.get('status') == 'CREATED':
@@ -98,6 +104,9 @@ class GeopackageTask(QgsTask):
         req.setUrl(QUrl(f'{self.base_url}/data/{self.data_id}'))
 
         res = QgsNetworkAccessManager.blockingGet(req, forceRefresh=True)
+
+        if res.error() != QNetworkReply.NoError:
+            raise OrkamvApiException(ErrorReason.NETWORK_ERROR, res.errorString())
 
         self.file_name = os.path.abspath(os.path.join(self.target_dir, 'geopackage.gpkg'))
 
@@ -132,6 +141,7 @@ class GeopackageTask(QgsTask):
 
         except OrkamvApiException as e:
             self.error_reason = e.reason
+            self.error_message = e.message
             return False
 
     def get_results(self) -> str:

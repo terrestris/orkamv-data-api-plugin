@@ -30,11 +30,11 @@ from qgis.PyQt.QtWidgets import QAction, QMessageBox
 from qgis.gui import QgisInterface, QgsFileWidget
 
 from qgis.core import Qgis, QgsProject, QgsApplication, \
-    QgsCoordinateReferenceSystem, QgsVectorLayer, QgsDataProvider
+    QgsCoordinateReferenceSystem, QgsVectorLayer, QgsDataProvider, QgsSettings
 
 from .types import TaskStatus, ErrorReason
-from .resources_task import ResourcesTask
-from .geopackage_task import GeopackageTask
+from .task_resources import ResourcesTask
+from .task_geopackage import GeopackageTask
 
 # Initialize Qt resources from file resources.py
 from .resources import *
@@ -230,6 +230,11 @@ class OrkamvDataApiPlugin:
             self.dlg.persistance_path_widget.fileChanged.connect(self.check_required_for_download)
             self.dlg.persistance_path_widget.lineEdit().setEnabled(False)
 
+            # restore server url
+            s = QgsSettings()
+            server_url = s.value('orka_mv_data_api_plugin/server_url', '')
+            self.dlg.server_url_edit.setText(server_url)
+
             self.check_required_for_download()
         else:
             self.reset()
@@ -294,6 +299,9 @@ class OrkamvDataApiPlugin:
 
         url = self.dlg.server_url_edit.text()
 
+        s = QgsSettings()
+        s.setValue('orka_mv_data_api_plugin/server_url', url)
+
         if self.dlg.persistance_radio_temporary.isChecked():
             target_dir = tempfile.mkdtemp()
         else:
@@ -322,7 +330,7 @@ class OrkamvDataApiPlugin:
         self.geopackage_task_status = TaskStatus.CANCELLED
         if self.resources_task_status == TaskStatus.STARTED:
             self.resources_task.cancel()
-            self.show_message(self.geopackage_task.error_reason)
+            self.show_message(self.geopackage_task.error_reason, self.geopackage_task.error_message)
         else:
             self.reset()
 
@@ -330,7 +338,7 @@ class OrkamvDataApiPlugin:
         self.resources_task_status = TaskStatus.CANCELLED
         if self.geopackage_task_status == TaskStatus.STARTED:
             self.geopackage_task.cancel()
-            self.show_message(self.resources_task.error_reason)
+            self.show_message(self.resources_task.error_reason, self.geopackage_task.error_message)
         else:
             self.reset()
 
@@ -402,6 +410,8 @@ class OrkamvDataApiPlugin:
             message = self.tr('The chosen bounding box is too big.')
         elif reason == ErrorReason.NO_THREADS_AVAILABLE:
             message = self.tr('Current job limit is reached. Please try again in a few minutes.')
+        elif reason == ErrorReason.NETWORK_ERROR:
+            message = self.tr('Network error: {}').format(message)
         else:
             message = self.tr('Unknown message type: {}: {}').format(str(reason), message)
             level: Qgis.Critical
