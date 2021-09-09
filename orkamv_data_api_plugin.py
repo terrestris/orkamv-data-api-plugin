@@ -33,8 +33,8 @@ from qgis.core import Qgis, QgsProject, QgsApplication, \
     QgsCoordinateReferenceSystem, QgsVectorLayer, QgsDataProvider
 
 from .types import TaskStatus, ErrorReason
-from .resources_task import ResourcesTask
-from .geopackage_task import GeopackageTask
+from .task_resources import ResourcesTask
+from .task_geopackage import GeopackageTask
 
 # Initialize Qt resources from file resources.py
 from .resources import *
@@ -322,7 +322,7 @@ class OrkamvDataApiPlugin:
         self.geopackage_task_status = TaskStatus.CANCELLED
         if self.resources_task_status == TaskStatus.STARTED:
             self.resources_task.cancel()
-            self.show_message(self.geopackage_task.error_reason)
+            self.show_message(self.geopackage_task.error_reason, self.geopackage_task.error_message)
         else:
             self.reset()
 
@@ -330,7 +330,7 @@ class OrkamvDataApiPlugin:
         self.resources_task_status = TaskStatus.CANCELLED
         if self.geopackage_task_status == TaskStatus.STARTED:
             self.geopackage_task.cancel()
-            self.show_message(self.resources_task.error_reason)
+            self.show_message(self.resources_task.error_reason, self.geopackage_task.error_message)
         else:
             self.reset()
 
@@ -402,6 +402,8 @@ class OrkamvDataApiPlugin:
             message = self.tr('The chosen bounding box is too big.')
         elif reason == ErrorReason.NO_THREADS_AVAILABLE:
             message = self.tr('Current job limit is reached. Please try again in a few minutes.')
+        elif reason == ErrorReason.NETWORK_ERROR:
+            message = self.tr('Network error: {}').format(message)
         else:
             message = self.tr('Unknown message type: {}: {}').format(str(reason), message)
             level: Qgis.Critical

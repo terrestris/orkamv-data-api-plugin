@@ -23,6 +23,7 @@
 """
 
 from enum import Enum
+from typing import Optional
 
 
 class ErrorReason(Enum):
@@ -31,6 +32,7 @@ class ErrorReason(Enum):
     BBOX_TOO_BIG = 'BBOX_TOO_BIG'
     BBOX_INVALID = 'BBOX_INVALID'
     NO_THREADS_AVAILABLE = 'NO_THREADS_AVAILABLE'
+    NETWORK_ERROR = 'NETWORK_ERROR'
 
 
 class TaskStatus(Enum):
@@ -40,6 +42,7 @@ class TaskStatus(Enum):
 
 
 class OrkamvApiException(Exception):
-    def __init__(self, reason: ErrorReason):
+    def __init__(self, reason: ErrorReason, message: Optional[str] = None):
         self.reason = reason
+        self.message = message
         super().__init__(self, str(reason))
