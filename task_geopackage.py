@@ -25,12 +25,11 @@
 import json
 import os
 from time import sleep
-from typing import Dict, Optional
+from typing import Optional
 
-from PyQt5.QtCore import QUrl
-from PyQt5.QtNetwork import QNetworkRequest, QNetworkReply
-from qgis._core import QgsNetworkAccessManager, QgsTask, QgsVectorLayer, QgsDataProvider, QgsRectangle
+from qgis._core import QgsTask, QgsRectangle
 
+from .network_request import post_json, get_json, get_bytes
 from .types import ErrorReason, OrkamvApiException
 
 
@@ -54,64 +53,25 @@ class GeopackageTask(QgsTask):
         super().__init__('ORKa.MV Data API Geopackage Job', QgsTask.Flag())
 
     def start_job(self):
-        req_data = json.dumps({'bbox': self.extent}).encode('utf8')
-
-        req = QNetworkRequest()
-        req.setUrl(QUrl(f'{self.base_url}/jobs/'))
-        req.setHeader(QNetworkRequest.ContentTypeHeader, 'application/json')
-
-        res = QgsNetworkAccessManager.blockingPost(req, data=req_data, forceRefresh=True)
-
-        if res.error() != QNetworkReply.NoError:
-            raise OrkamvApiException(ErrorReason.NETWORK_ERROR, res.errorString())
-
-        res_data = json.loads(res.content().data().decode('utf8'))
-
-        if not res_data.get('success'):
-            self.handle_api_error(res_data)
-
+        res_data = post_json(f'{self.base_url}/jobs/', {'bbox': self.extent})
         self.job_id = res_data['job_id']
 
     def get_job_status(self) -> bool:
-        req = QNetworkRequest()
-        req.setUrl(QUrl(f'{self.base_url}/jobs/{self.job_id}'))
-
-        res = QgsNetworkAccessManager.blockingGet(req, forceRefresh=True)
-
-        if res.error() != QNetworkReply.NoError:
-            raise OrkamvApiException(ErrorReason.NETWORK_ERROR, res.errorString())
-
-        res_data = json.loads(res.content().data().decode('utf8'))
+        res_data = get_json(f'{self.base_url}/jobs/{self.job_id}')
 
         if res_data.get('status') == 'CREATED':
             self.data_id = res_data['data_id']
             return True
-        elif res_data.get('status') == 'RUNNING':
-            return False
         else:
-            self.handle_api_error(res_data)
-
-    def handle_api_error(self, res_data: Dict):
-        print(f'Status: {res_data.get("status")}, Message:{res_data.get("message")}')
-        if 'message' in res_data:
-            raise OrkamvApiException(ErrorReason(res_data['message']))
-        if 'status' in res_data:
-            raise OrkamvApiException(ErrorReason(res_data['status']))
-        raise OrkamvApiException(ErrorReason.ERROR)
+            return False
 
     def download_file(self):
-        req = QNetworkRequest()
-        req.setUrl(QUrl(f'{self.base_url}/data/{self.data_id}'))
-
-        res = QgsNetworkAccessManager.blockingGet(req, forceRefresh=True)
-
-        if res.error() != QNetworkReply.NoError:
-            raise OrkamvApiException(ErrorReason.NETWORK_ERROR, res.errorString())
+        data = get_bytes(f'{self.base_url}/data/{self.data_id}')
 
         self.file_name = os.path.abspath(os.path.join(self.target_dir, 'geopackage.gpkg'))
 
         with open(self.file_name, 'w+b') as fp:
-            fp.write(res.content().data())
+            fp.write(data)
 
     def run(self):
         try:
