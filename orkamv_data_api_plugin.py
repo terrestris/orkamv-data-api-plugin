@@ -30,7 +30,7 @@ from qgis.PyQt.QtWidgets import QAction, QMessageBox
 from qgis.gui import QgisInterface, QgsFileWidget
 
 from qgis.core import Qgis, QgsProject, QgsApplication, \
-    QgsCoordinateReferenceSystem, QgsVectorLayer, QgsDataProvider
+    QgsCoordinateReferenceSystem, QgsVectorLayer, QgsDataProvider, QgsSettings
 
 from .types import TaskStatus, ErrorReason
 from .task_resources import ResourcesTask
@@ -230,6 +230,11 @@ class OrkamvDataApiPlugin:
             self.dlg.persistance_path_widget.fileChanged.connect(self.check_required_for_download)
             self.dlg.persistance_path_widget.lineEdit().setEnabled(False)
 
+            # restore server url
+            s = QgsSettings()
+            server_url = s.value('orka_mv_data_api_plugin/server_url', '')
+            self.dlg.server_url_edit.setText(server_url)
+
             self.check_required_for_download()
         else:
             self.reset()
@@ -293,6 +298,9 @@ class OrkamvDataApiPlugin:
         self.dlg.download_start_button.setEnabled(False)
 
         url = self.dlg.server_url_edit.text()
+
+        s = QgsSettings()
+        s.setValue('orka_mv_data_api_plugin/server_url', url)
 
         if self.dlg.persistance_radio_temporary.isChecked():
             target_dir = tempfile.mkdtemp()
