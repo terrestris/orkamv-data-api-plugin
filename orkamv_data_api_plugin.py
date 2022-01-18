@@ -24,6 +24,8 @@
 import tempfile
 from typing import Optional, Dict, List
 
+from PyQt5.QtCore import Qt
+from PyQt5.QtWidgets import QListView, QCheckBox
 from qgis.PyQt.QtCore import QSettings, QTranslator, QCoreApplication
 from qgis.PyQt.QtGui import QIcon
 from qgis.PyQt.QtWidgets import QAction, QMessageBox
@@ -32,7 +34,8 @@ from qgis.gui import QgisInterface, QgsFileWidget
 from qgis.core import Qgis, QgsProject, QgsApplication, \
     QgsCoordinateReferenceSystem, QgsVectorLayer, QgsDataProvider, QgsSettings
 
-from .types import TaskStatus, ErrorReason
+from .network_request import get_json
+from .types import TaskStatus, ErrorReason, LayerGroup, LayerSelectionMode
 from .task_resources import ResourcesTask
 from .task_geopackage import GeopackageTask
 
@@ -58,6 +61,9 @@ class OrkamvDataApiPlugin:
     result_layer_order: List[str]
     result_style_files: Dict[str, str]
     result_symbols_dir: str
+
+    selection_mode: LayerSelectionMode = LayerSelectionMode.ALL
+    layer_groups_cache: Dict[str, List[LayerGroup]] = {}
 
     def __init__(self, iface):
         """Constructor.
@@ -216,6 +222,7 @@ class OrkamvDataApiPlugin:
             self.dlg.persistance_radio_todir.toggled.connect(self.check_required_for_download)
             self.dlg.svg_combo_box.currentIndexChanged.connect(self.check_required_for_download)
             self.dlg.server_url_edit.textChanged.connect(self.check_required_for_download)
+            self.dlg.layer_radio_groups.toggled.connect(self.toggle_layer_selection_mode)
 
             # setup extent widget
             self.dlg.extent_widget.setOutputCrs(QgsCoordinateReferenceSystem("EPSG:4326"))
@@ -233,6 +240,8 @@ class OrkamvDataApiPlugin:
             self.dlg.persistance_path_widget.lineEdit().setEnabled(False)
         else:
             self.reset()
+
+        self.update_layer_group_selection_visibility()
 
         s = QgsSettings()
         server_url = s.value('orka_mv_data_api_plugin/server_url', '')
@@ -289,11 +298,13 @@ class OrkamvDataApiPlugin:
     def check_required_for_download(self):
         path_valid = self.dlg.persistance_radio_temporary.isChecked() or \
                      self.dlg.persistance_path_widget.filePath()
+        layer_selection_valid = self.is_layer_selection_valid()
         check = self.dlg.extent_widget.isValid() \
             and self.geopackage_task_status != TaskStatus.STARTED \
             and self.dlg.svg_combo_box.currentData() is not None \
             and path_valid \
-            and self.dlg.server_url_edit.text()
+            and self.dlg.server_url_edit.text() \
+            and layer_selection_valid
         self.dlg.download_start_button.setEnabled(bool(check))
 
     def start_download(self):
@@ -313,7 +324,12 @@ class OrkamvDataApiPlugin:
 
         svg_dir = self.dlg.svg_combo_box.currentData()
 
-        self.geopackage_task = GeopackageTask(url, target_dir, extent)
+        if self.selection_mode == LayerSelectionMode.ALL:
+            self.geopackage_task = GeopackageTask(url, target_dir, extent)
+        elif self.selection_mode == LayerSelectionMode.GROUP:
+            layers = self.get_flat_group_layers()
+            self.geopackage_task = GeopackageTask(url, target_dir, extent, layers=layers)
+
         self.geopackage_task.progressChanged.connect(self.update_progress)
         self.geopackage_task.taskCompleted.connect(self.geopackage_completed)
         self.geopackage_task.taskTerminated.connect(self.geopackage_terminated)
@@ -357,6 +373,7 @@ class OrkamvDataApiPlugin:
             self.download_finished()
 
     def download_finished(self):
+        # TODO add group mapping to project settings for each layer
         gpkg_layer = QgsVectorLayer(self.geopackage_task.file_name, 'parent', 'ogr')
         layers: Dict[str, QgsVectorLayer] = {}
 
@@ -397,6 +414,7 @@ class OrkamvDataApiPlugin:
     def reset(self):
         self.dlg.download_progress_bar.setValue(0)
         self.check_required_for_download()
+        self.dlg.layer_radio_all.click()
 
     def show_message(self, reason: ErrorReason, message: Optional[str] = None):
         message: str
@@ -414,8 +432,91 @@ class OrkamvDataApiPlugin:
             message = self.tr('Current job limit is reached. Please try again in a few minutes.')
         elif reason == ErrorReason.NETWORK_ERROR:
             message = self.tr('Network error: {}').format(message)
+        elif reason == ErrorReason.GROUPS_ERROR:
+            message = self.tr('Could not download layer groups. Please make sure you entered ' +
+                              'a correct server url and try again.')
         else:
             message = self.tr('Unknown message type: {}: {}').format(str(reason), message)
             level: Qgis.Critical
 
         self.iface.messageBar().pushMessage(message, level=level)
+
+    def toggle_layer_selection_mode(self):
+        if self.dlg.layer_radio_all.isChecked():
+            self.enable_layer_selection_mode_all()
+        elif self.dlg.layer_radio_groups.isChecked():
+            self.enable_layer_selection_mode_group()
+        self.check_required_for_download()
+
+    def enable_layer_selection_mode_group(self):
+        self.selection_mode = LayerSelectionMode.GROUP
+        api_url = self.get_groups_endpoint()
+
+        if api_url not in self.layer_groups_cache:
+            try:
+                data = get_json(api_url)
+                self.layer_groups_cache[api_url] = data
+            except Exception:
+                self.show_message(ErrorReason.GROUPS_ERROR)
+                self.dlg.layer_radio_all.click()
+                return
+        self.refresh_layer_group_selection(self.layer_groups_cache[api_url])
+        self.update_layer_group_selection_visibility()
+
+    def enable_layer_selection_mode_all(self):
+        self.selection_mode = LayerSelectionMode.ALL
+        self.update_layer_group_selection_visibility()
+
+    def refresh_layer_group_selection(self, group_config: List[LayerGroup]):
+        layout = self.dlg.layer_select_groups.layout()
+        for group in group_config:
+            checkbox = QCheckBox(group['title'])
+            checkbox.stateChanged.connect(self.check_required_for_download)
+            layout.addWidget(checkbox)
+
+    def update_layer_group_selection_visibility(self):
+        visible = self.selection_mode == LayerSelectionMode.GROUP
+        self.dlg.layer_select_groups_area.setVisible(visible)
+
+    def is_layer_selection_valid(self) -> bool:
+        """ Check if layer selection is valid.
+
+        Layer selection is valid if either selection mode is ALL
+        or at least on group was selected in selection mode GROUP.
+        """
+        if self.selection_mode == LayerSelectionMode.ALL:
+            return True
+        if self.selection_mode == LayerSelectionMode.GROUP:
+            checkbox_container = self.dlg.layer_select_groups.layout()
+            for itemIdx in range(checkbox_container.count()):
+                checkbox = checkbox_container.itemAt(itemIdx).widget()
+                if checkbox.checkState() == Qt.Checked:
+                    return True
+        return False
+
+    def get_selected_group_names(self) -> List[str]:
+        checkbox_container = self.dlg.layer_select_groups.layout()
+        groups = []
+        for itemIdx in range(checkbox_container.count()):
+            checkbox = checkbox_container.itemAt(itemIdx).widget()
+            if checkbox.checkState() == Qt.Checked:
+                groups.append(checkbox.text())
+        return groups
+
+    def get_flat_group_layers(self) -> List[str]:
+        """Get all layer names of all selected groups.
+        """
+        layers = []
+        api_url = self.get_groups_endpoint()
+        layer_groups = self.layer_groups_cache[api_url]
+        selected_group_names = self.get_selected_group_names()
+        for group in layer_groups:
+            if group['title'] in selected_group_names:
+                layers = layers + group['layers']
+        # make sure each layer name exists only once in list
+        return list(set(layers))
+
+    def get_groups_endpoint(self) -> str:
+        base_url = self.dlg.server_url_edit.text()
+        base_url = base_url[:-1] if base_url.endswith('/') else base_url
+        return f'{base_url}/data/groups'

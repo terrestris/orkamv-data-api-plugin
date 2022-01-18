@@ -23,7 +23,7 @@
 """
 
 from enum import Enum
-from typing import Optional
+from typing import Optional, TypedDict, List
 
 
 class ErrorReason(Enum):
@@ -33,6 +33,7 @@ class ErrorReason(Enum):
     BBOX_INVALID = 'BBOX_INVALID'
     NO_THREADS_AVAILABLE = 'NO_THREADS_AVAILABLE'
     NETWORK_ERROR = 'NETWORK_ERROR'
+    GROUPS_ERROR = 'GROUPS_ERROR'
 
 
 class TaskStatus(Enum):
@@ -46,3 +47,15 @@ class OrkamvApiException(Exception):
         self.reason = reason
         self.message = message
         super().__init__(self, str(reason))
+
+
+class LayerGroup(TypedDict):
+    """Typing for the layer group mapping.
+    """
+    title: str
+    layers: List[str]
+
+
+class LayerSelectionMode(Enum):
+    ALL = 1
+    GROUP = 2
