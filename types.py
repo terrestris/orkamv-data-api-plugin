@@ -59,3 +59,7 @@ class LayerGroup(TypedDict):
 class LayerSelectionMode(Enum):
     ALL = 1
     GROUP = 2
+
+
+LAYER_GROUPS_PROP_NAME = 'ORKA_LAYER_GROUPS'
+LAYER_BASE_NAME = 'ORKa.MV Data API'
