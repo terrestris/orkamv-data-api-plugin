@@ -25,7 +25,7 @@ import os
 from typing import Optional, List, Dict
 
 from qgis.PyQt.QtCore import QSettings, QTranslator, QCoreApplication
-from PyQt5.QtWidgets import QCheckBox, QWidget, QVBoxLayout
+from PyQt5.QtWidgets import QCheckBox, QWidget, QVBoxLayout, QSizePolicy
 from PyQt5.QtCore import Qt
 from qgis.gui import QgisInterface
 from qgis.core import QgsProject, QgsLayerTreeGroup, QgsLayerTreeLayer
@@ -146,6 +146,7 @@ class OrkamvVisibilityToggleController:
             checkbox.stateChanged.connect(lambda state, t=title: self.update_visibility_for_group(t, state))
             layout.addWidget(checkbox)
         widget.setLayout(layout)
+        widget.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Fixed)
         self.dlg.layer_select_groups_area.setWidget(widget)
 
     def get_layer_groups(self) -> List[QgsLayerTreeGroup]:

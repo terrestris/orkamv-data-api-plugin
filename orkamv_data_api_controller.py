@@ -26,7 +26,7 @@ import os
 import tempfile
 
 from PyQt5.QtCore import Qt
-from PyQt5.QtWidgets import QCheckBox
+from PyQt5.QtWidgets import QCheckBox, QSizePolicy, QWidget, QVBoxLayout
 
 from qgis.PyQt.QtCore import QSettings, QTranslator, QCoreApplication
 from qgis.gui import QgisInterface, QgsFileWidget
@@ -366,11 +366,15 @@ class OrkamvDataApiController:
         self.update_layer_group_selection_visibility()
 
     def refresh_layer_group_selection(self, group_config: List[LayerGroup]):
-        layout = self.dlg.layer_select_groups.layout()
+        widget = QWidget()
+        layout = QVBoxLayout()
         for group in group_config:
             checkbox = QCheckBox(group['title'])
             checkbox.stateChanged.connect(self.check_required_for_download)
             layout.addWidget(checkbox)
+        widget.setLayout(layout)
+        widget.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Fixed)
+        self.dlg.layer_select_groups_area.setWidget(widget)
 
     def update_layer_group_selection_visibility(self):
         visible = self.selection_mode == LayerSelectionMode.GROUP
@@ -385,7 +389,7 @@ class OrkamvDataApiController:
         if self.selection_mode == LayerSelectionMode.ALL:
             return True
         if self.selection_mode == LayerSelectionMode.GROUP:
-            checkbox_container = self.dlg.layer_select_groups.layout()
+            checkbox_container = self.dlg.layer_select_groups_area.widget().layout()
             for itemIdx in range(checkbox_container.count()):
                 checkbox = checkbox_container.itemAt(itemIdx).widget()
                 if checkbox.checkState() == Qt.Checked:
