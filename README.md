@@ -19,5 +19,4 @@ Anwendung
 Attributions
 ============
 
-Makes use of icons by
-Copyright (c) 2019, Stephen Hutchings (www.s-ings.com)
+Verwendet Icons von Stephen Hutchings (www.s-ings.com) (CC BY-SA 4.0)
