@@ -397,7 +397,7 @@ class OrkamvDataApiController:
         return False
 
     def get_selected_group_names(self) -> List[str]:
-        checkbox_container = self.dlg.layer_select_groups.layout()
+        checkbox_container = self.dlg.layer_select_groups_area.widget().layout()
         groups = []
         for itemIdx in range(checkbox_container.count()):
             checkbox = checkbox_container.itemAt(itemIdx).widget()
