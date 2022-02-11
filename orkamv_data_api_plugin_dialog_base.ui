@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>767</width>
-    <height>440</height>
+    <height>446</height>
    </rect>
   </property>
   <property name="font">
@@ -193,7 +193,7 @@
         <item>
          <widget class="QRadioButton" name="layer_radio_groups">
           <property name="text">
-           <string>By Group</string>
+           <string>By group</string>
           </property>
          </widget>
         </item>
@@ -211,7 +211,7 @@
           <x>0</x>
           <y>0</y>
           <width>655</width>
-          <height>67</height>
+          <height>73</height>
          </rect>
         </property>
         <layout class="QGridLayout" name="gridLayout"/>
