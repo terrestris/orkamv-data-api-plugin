@@ -1,5 +1,6 @@
 <RCC>
     <qresource prefix="/plugins/orkamv_data_api_plugin" >
-        <file>icon.png</file>
+        <file>data_api_icon.png</file>
+        <file>visibility_toggle_icon.png</file>
     </qresource>
 </RCC>

@@ -1,66 +1,80 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!DOCTYPE TS><TS version="2.0">
+<!DOCTYPE TS>
+<TS version="2.1" language="de" sourcelanguage="en">
 <context>
-    <name>OrkamvDataApiPlugin</name>
+    <name>OrkamvDataApiController</name>
     <message>
-        <location filename="../orkamv_data_api_plugin.py" line="199"/>
-        <source>&amp;ORKa.MV Data API</source>
-        <translation>&amp;ORKa.MV Data API</translation>
-    </message>
-    <message>
-        <location filename="../orkamv_data_api_plugin.py" line="187"/>
-        <source>ORKa.MV Data API</source>
-        <translation>ORKa.MV Data API</translation>
-    </message>
-    <message>
-        <location filename="../orkamv_data_api_plugin.py" line="263"/>
-        <source>WARNING: No SVG folder available! Please check your preferences.</source>
-        <translation>WARNUNG: Kein SVG Verzeichnis verfügbar! Bitte überprüfen Sie Ihre Einstellungen.</translation>
-    </message>
-    <message>
-        <location filename="../orkamv_data_api_plugin.py" line="274"/>
-        <source>The directory is not empty</source>
-        <translation>Das Verzeichnis ist nicht leer</translation>
-    </message>
-    <message>
-        <location filename="../orkamv_data_api_plugin.py" line="275"/>
-        <source>Do you want to overwrite the content?</source>
-        <translation>Möchten Sie den Inhalt überschreiben?</translation>
-    </message>
-    <message>
-        <location filename="../orkamv_data_api_plugin.py" line="402"/>
-        <source>An error occured. Please try again later and contact an administrator if the error still occurs.</source>
-        <translation>Ein Fehler ist aufgetreten. Bitte versuchen Sie es später noch einmal und kontaktieren Sie den Administrator, falls der Fehler weiterhin auftritt.</translation>
-    </message>
-    <message>
-        <location filename="../orkamv_data_api_plugin.py" line="406"/>
-        <source>The processing timed out. Please try again with a smaller area.</source>
-        <translation>Eine Zeitüberschreitung beim Prozessieren ist aufgetreten. Bitte versuchen Sie es mit einem kleineren Gebiet noch einmal.</translation>
-    </message>
-    <message>
-        <location filename="../orkamv_data_api_plugin.py" line="408"/>
-        <source>The chosen bounding box is too big.</source>
-        <translation>Der gewählte Kartenausschnitt ist zu groß.</translation>
-    </message>
-    <message>
-        <location filename="../orkamv_data_api_plugin.py" line="410"/>
-        <source>Current job limit is reached. Please try again in a few minutes.</source>
-        <translation>Das Job Limit wurde erreicht. Bitte versuchen Sie es in wenigen Minuten noch einmal.</translation>
-    </message>
-    <message>
-        <location filename="../orkamv_data_api_plugin.py" line="414"/>
-        <source>Unknown message type: {}: {}</source>
-        <translation>Unbekannter Nachrichtentyp: {}: {}</translation>
-    </message>
-    <message>
-        <location filename="../orkamv_data_api_plugin.py" line="224"/>
+        <location filename="../orkamv_data_api_controller.py" line="115"/>
         <source>Please choose an extent</source>
         <translation>Bitte wählen Sie einen Kartenausschnitt</translation>
     </message>
     <message>
-        <location filename="../orkamv_data_api_plugin.py" line="412"/>
+        <location filename="../orkamv_data_api_controller.py" line="154"/>
+        <source>WARNING: No SVG folder available! Please check your preferences.</source>
+        <translation>WARNUNG: Kein SVG Verzeichnis verfügbar! Bitte überprüfen Sie Ihre Einstellungen.</translation>
+    </message>
+    <message>
+        <location filename="../orkamv_data_api_controller.py" line="165"/>
+        <source>The directory is not empty</source>
+        <translation>Das Verzeichnis ist nicht leer</translation>
+    </message>
+    <message>
+        <location filename="../orkamv_data_api_controller.py" line="166"/>
+        <source>Do you want to overwrite the content?</source>
+        <translation>Möchten Sie den Inhalt überschreiben?</translation>
+    </message>
+    <message>
+        <location filename="../orkamv_data_api_controller.py" line="318"/>
+        <source>An error occurred. Please try again later and contact an administrator if the error still occurs.</source>
+        <translation>Ein Fehler ist aufgetreten. Bitte versuchen Sie es später noch einmal und kontaktieren Sie den Administrator, falls der Fehler weiterhin auftritt.</translation>
+    </message>
+    <message>
+        <location filename="../orkamv_data_api_controller.py" line="322"/>
+        <source>The processing timed out. Please try again with a smaller area.</source>
+        <translation>Eine Zeitüberschreitung beim Prozessieren ist aufgetreten. Bitte versuchen Sie es mit einem kleineren Gebiet noch einmal.</translation>
+    </message>
+    <message>
+        <location filename="../orkamv_data_api_controller.py" line="324"/>
+        <source>The chosen bounding box is too big.</source>
+        <translation>Der gewählte Kartenausschnitt ist zu groß.</translation>
+    </message>
+    <message>
+        <location filename="../orkamv_data_api_controller.py" line="326"/>
+        <source>Current job limit is reached. Please try again in a few minutes.</source>
+        <translation>Das Job Limit wurde erreicht. Bitte versuchen Sie es in wenigen Minuten noch einmal.</translation>
+    </message>
+    <message>
+        <location filename="../orkamv_data_api_controller.py" line="328"/>
         <source>Network error: {}</source>
         <translation>Netzwerk Fehler: {}</translation>
+    </message>
+    <message>
+        <location filename="../orkamv_data_api_controller.py" line="330"/>
+        <source>Could not download layer groups. Please make sure you entered a correct server url and try again.</source>
+        <translation>Layergruppen konnten nicht geladen werden. Bitte stellen Sie sicher, dass eine korrekte Server URL eingegeben wurde und versuchen Sie es erneut.</translation>
+    </message>
+    <message>
+        <location filename="../orkamv_data_api_controller.py" line="333"/>
+        <source>Unknown message type: {}: {}</source>
+        <translation>Unbekannter Nachrichtentyp: {}: {}</translation>
+    </message>
+</context>
+<context>
+    <name>OrkamvDataApiPlugin</name>
+    <message>
+        <location filename="../orkamv_data_api_plugin.py" line="189"/>
+        <source>&amp;ORKa.MV Data API</source>
+        <translation>&amp;ORKa.MV Data API</translation>
+    </message>
+    <message>
+        <location filename="../orkamv_data_api_plugin.py" line="170"/>
+        <source>ORKa.MV Data API</source>
+        <translation>ORKa.MV Data API</translation>
+    </message>
+    <message>
+        <location filename="../orkamv_data_api_plugin.py" line="176"/>
+        <source>ORKa.MV Visibility Toggle</source>
+        <translation>ORKa.MV Sichtbarkeitsregler</translation>
     </message>
 </context>
 <context>
@@ -111,14 +125,42 @@
         <translation>Zielverzeichnis:</translation>
     </message>
     <message>
-        <location filename="../orkamv_data_api_plugin_dialog_base.ui" line="135"/>
+        <location filename="../orkamv_data_api_plugin_dialog_base.ui" line="142"/>
         <source>All needed files will be stored in the target directory.</source>
         <translation>Im Zielverzeichnis werden alle benötigten Daten abgelegt.</translation>
     </message>
     <message>
-        <location filename="../orkamv_data_api_plugin_dialog_base.ui" line="168"/>
+        <location filename="../orkamv_data_api_plugin_dialog_base.ui" line="149"/>
+        <source>Layer selection:</source>
+        <translation>Layerauswahl:</translation>
+    </message>
+    <message>
+        <location filename="../orkamv_data_api_plugin_dialog_base.ui" line="186"/>
+        <source>All</source>
+        <translation>Alle</translation>
+    </message>
+    <message>
+        <location filename="../orkamv_data_api_plugin_dialog_base.ui" line="196"/>
+        <source>By group</source>
+        <translation>Nach Gruppe</translation>
+    </message>
+    <message>
+        <location filename="../orkamv_data_api_plugin_dialog_base.ui" line="263"/>
         <source>Start</source>
         <translation>Start</translation>
+    </message>
+</context>
+<context>
+    <name>OrkamvVisibilityTogglePluginDialogBase</name>
+    <message>
+        <location filename="../orkamv_visibility_toggle_plugin_dialog_base.ui" line="19"/>
+        <source>ORKa.MV Visibility Toggle</source>
+        <translation>ORKa.MV Sichtbarkeitsregler</translation>
+    </message>
+    <message>
+        <location filename="../orkamv_visibility_toggle_plugin_dialog_base.ui" line="37"/>
+        <source>Layer Group</source>
+        <translation>Layergruppe</translation>
     </message>
 </context>
 </TS>

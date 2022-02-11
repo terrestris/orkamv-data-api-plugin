@@ -1,5 +1,5 @@
 import json
-from typing import Dict, AnyStr
+from typing import Dict, AnyStr, List, Union
 
 from PyQt5.QtCore import QUrl
 from PyQt5.QtNetwork import QNetworkRequest, QNetworkReply
@@ -51,6 +51,6 @@ def get_bytes(url: str) -> AnyStr:
     return res.content().data()
 
 
-def get_json(url: str) -> Dict:
+def get_json(url: str) -> Union[Dict, List]:
     res = get_response(url)
     return json.loads(res.content().data().decode('utf8'))

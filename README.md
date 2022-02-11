@@ -15,3 +15,8 @@ Anwendung
 1. Wenn unter Speicherung `Temporär` ausgewählt wird, dann werden das Geopackage und die Styles im temporären Verzeichnis des Betriebssystems abgelegt und ggf. beim nächsten Start gelöscht.
 1. Wenn unter Speicherung `Verzeichnis` ausgewählt wird, muss ein Verzeichnis für das Geopackage und die Styles ausgewählt werden.
 1. Mit Klick auf Starten startet der Prozess. Achten Sie ggf. auf Meldungen die in der QGIS PushBar erscheinen.
+
+Attributions
+============
+
+Verwendet Icons von Stephen Hutchings (www.s-ings.com) (CC BY-SA 4.0)

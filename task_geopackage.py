@@ -25,7 +25,7 @@
 import json
 import os
 from time import sleep
-from typing import Optional
+from typing import Optional, List
 
 from qgis._core import QgsTask, QgsRectangle
 
@@ -35,13 +35,14 @@ from .types import ErrorReason, OrkamvApiException
 
 class GeopackageTask(QgsTask):
 
+    layers: List[str] = None
     job_id: int
     data_id: str
     file_name: str
     error_reason: Optional[ErrorReason] = None
     error_message: Optional[str] = None
 
-    def __init__(self, base_url: str, target_dir: str, extent: QgsRectangle):
+    def __init__(self, base_url: str, target_dir: str, extent: QgsRectangle, layers: List[str] = None):
         self.base_url = base_url[:-1] if base_url.endswith('/') else base_url
         self.extent = (
             extent.xMinimum(),
@@ -50,10 +51,17 @@ class GeopackageTask(QgsTask):
             extent.yMaximum()
         )
         self.target_dir = target_dir
+        if layers is not None:
+            self.layers = layers
         super().__init__('ORKa.MV Data API Geopackage Job', QgsTask.Flag())
 
     def start_job(self):
-        res_data = post_json(f'{self.base_url}/jobs/', {'bbox': self.extent})
+        params = {
+            'bbox': self.extent,
+        }
+        if self.layers is not None:
+            params['layers'] = self.layers
+        res_data = post_json(f'{self.base_url}/jobs/', params)
         self.job_id = res_data['job_id']
 
     def get_job_status(self) -> bool:
