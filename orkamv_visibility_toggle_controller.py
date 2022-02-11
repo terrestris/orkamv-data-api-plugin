@@ -106,18 +106,11 @@ class OrkamvVisibilityToggleController:
 
     def refresh_groups_hash(self):
         layer_groups = self.get_layer_groups()
-        layer_group_names = [layer_group.name() for layer_group in layer_groups]
-        for group in layer_groups:
-            if group.name() not in self.selected_groups_hash:
-                group_config = group.customProperty(LAYER_GROUPS_PROP_NAME)
-                self.selected_groups_hash[group.name()] = [g['title'] for g in group_config]
-        to_delete = []
-        for key in self.selected_groups_hash:
-            if key not in layer_group_names:
-                to_delete.append(key)
-        for k in to_delete:
-            if k in self.selected_groups_hash:
-                del self.selected_groups_hash[k]
+        self.selected_groups_hash = {
+            group.name(): [
+                g['title'] for g in group.customProperty(LAYER_GROUPS_PROP_NAME)
+            ] for group in layer_groups
+        }
 
     def init_group_selection(self):
         config = self.get_groups_config()
